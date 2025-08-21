@@ -14,7 +14,7 @@ const Menu = () => {
     { id: 'boissons', name: 'Boissons' },
   ]
 
-  // Données temporaires - seront remplacées par l'API
+  // Données temporaires avec vraies images - seront remplacées par l'API
   const menuItems = [
     {
       id: 1,
@@ -22,7 +22,7 @@ const Menu = () => {
       price: 15.90,
       category: 'plats',
       description: 'Base tomate, mozzarella, basilic frais, huile d\'olive',
-      image: null,
+      image: '/images/menu/pizza-margherita.jpg',
       rating: 4.5,
       reviews: 23
     },
@@ -32,7 +32,7 @@ const Menu = () => {
       price: 12.50,
       category: 'entrees',
       description: 'Salade verte, croûtons, parmesan, sauce César maison',
-      image: null,
+      image: '/images/menu/salade-cesar.jpg',
       rating: 4.2,
       reviews: 18
     },
@@ -42,7 +42,7 @@ const Menu = () => {
       price: 18.00,
       category: 'plats',
       description: 'Bœuf angus, cheddar, bacon, légumes frais, frites maison',
-      image: null,
+      image: '/images/menu/burger-gourmand.jpg',
       rating: 4.7,
       reviews: 31
     },
@@ -52,7 +52,7 @@ const Menu = () => {
       price: 7.50,
       category: 'desserts',
       description: 'Mascarpone, café, cacao, biscuits à la cuillère',
-      image: null,
+      image: '/images/menu/tiramisu-maison.jpg',
       rating: 4.8,
       reviews: 15
     },
@@ -140,9 +140,13 @@ const Menu = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredItems.map(item => (
             <div key={item.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-              {/* Image placeholder */}
-              <div className="h-48 bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-400">Image du plat</span>
+              {/* Image du plat */}
+              <div className="h-48 bg-gray-200 overflow-hidden">
+                <img 
+                  src={item.image} 
+                  alt={item.name}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
               </div>
               
               <div className="p-4">

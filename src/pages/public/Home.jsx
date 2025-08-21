@@ -101,16 +101,20 @@ const Home = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Placeholder pour les plats populaires */}
+            {/* Plats populaires avec vraies images */}
             {[
-              { name: 'Pizza Margherita', price: '15.90€', category: 'Pizza' },
-              { name: 'Salade César', price: '12.50€', category: 'Entrée' },
-              { name: 'Burger Gourmand', price: '18.00€', category: 'Plat' },
-              { name: 'Tiramisu Maison', price: '7.50€', category: 'Dessert' },
+              { name: 'Pizza Margherita', price: '15.90€', category: 'Pizza', image: '/images/menu/pizza-margherita.jpg' },
+              { name: 'Salade César', price: '12.50€', category: 'Entrée', image: '/images/menu/salade-cesar.jpg' },
+              { name: 'Burger Gourmand', price: '18.00€', category: 'Plat', image: '/images/menu/burger-gourmand.jpg' },
+              { name: 'Tiramisu Maison', price: '7.50€', category: 'Dessert', image: '/images/menu/tiramisu-maison.jpg' },
             ].map((dish, index) => (
               <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="h-48 bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-400">Image du plat</span>
+                <div className="h-48 bg-gray-200 overflow-hidden">
+                  <img 
+                    src={dish.image} 
+                    alt={dish.name}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
                 </div>
                 <div className="p-4">
                   <span className="text-sm text-primary-600 font-medium">{dish.category}</span>
