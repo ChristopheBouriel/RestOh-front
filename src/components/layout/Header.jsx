@@ -1,13 +1,19 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Menu, X, ShoppingCart, User } from 'lucide-react'
+import { Menu, X, ShoppingCart, User, LogOut } from 'lucide-react'
+import { useAuth } from '../../hooks/useAuth'
+import { useCart } from '../../hooks/useCart'
 import { ROUTES } from '../../constants'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const navigate = useNavigate()
+  const { user, isAuthenticated, logout } = useAuth()
+  const { totalItems, toggleCart } = useCart()
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+  const toggleUserMenu = () => setIsUserMenuOpen(!isUserMenuOpen)
 
   const navItems = [
     { label: 'Accueil', path: ROUTES.HOME },
@@ -41,22 +47,73 @@ const Header = () => {
           {/* Actions Desktop */}
           <div className="hidden md:flex items-center space-x-4">
             <button
-              onClick={() => navigate(ROUTES.CHECKOUT)}
+              onClick={toggleCart}
               className="relative p-2 text-gray-700 hover:text-primary-600 transition-colors"
             >
               <ShoppingCart size={20} />
-              <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                0
-              </span>
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
             </button>
             
-            <button
-              onClick={() => navigate(ROUTES.LOGIN)}
-              className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors"
-            >
-              <User size={20} />
-              <span>Se connecter</span>
-            </button>
+            {isAuthenticated ? (
+              <div className="relative">
+                <button
+                  onClick={toggleUserMenu}
+                  className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors"
+                >
+                  <User size={20} />
+                  <span>{user?.name || 'Utilisateur'}</span>
+                </button>
+                
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                    <Link
+                      to={ROUTES.PROFILE}
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Mon Profil
+                    </Link>
+                    <Link
+                      to={ROUTES.ORDERS}
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Mes Commandes
+                    </Link>
+                    <Link
+                      to={ROUTES.RESERVATIONS}
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Mes Réservations
+                    </Link>
+                    <hr className="my-1" />
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false)
+                        logout()
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    >
+                      <LogOut size={16} className="mr-2" />
+                      Se déconnecter
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate(ROUTES.LOGIN)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors"
+              >
+                <User size={20} />
+                <span>Se connecter</span>
+              </button>
+            )}
           </div>
 
           {/* Mobile menu button */}

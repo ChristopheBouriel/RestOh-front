@@ -1,10 +1,16 @@
 import { useState } from 'react'
 import { Search, Filter } from 'lucide-react'
+import { useCart } from '../../hooks/useCart'
 
 const Menu = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [sortBy, setSortBy] = useState('name')
+  const { addItem } = useCart()
+
+  const handleAddToCart = (item) => {
+    addItem(item)
+  }
 
   const categories = [
     { id: 'all', name: 'Tous les plats' },
@@ -173,7 +179,10 @@ const Menu = () => {
                   <span className="text-xl font-bold text-primary-600">
                     {item.price.toFixed(2)}€
                   </span>
-                  <button className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors font-medium">
+                  <button 
+                    onClick={() => handleAddToCart(item)}
+                    className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                  >
                     + Panier
                   </button>
                 </div>

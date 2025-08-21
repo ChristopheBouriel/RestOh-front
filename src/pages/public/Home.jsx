@@ -1,8 +1,23 @@
 import { Link } from 'react-router-dom'
 import { ChefHat, Star, Clock, Users } from 'lucide-react'
+import { useCart } from '../../hooks/useCart'
 import { ROUTES } from '../../constants'
 
 const Home = () => {
+  const { addItem } = useCart()
+
+  const handleAddToCart = (dish) => {
+    // Convertir les données du plat pour le panier
+    const cartItem = {
+      id: dish.name.toLowerCase().replace(/\s+/g, '-'), // Simple ID basé sur le nom
+      name: dish.name,
+      price: parseFloat(dish.price.replace('€', '')),
+      image: dish.image,
+      category: dish.category
+    }
+    addItem(cartItem)
+  }
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -121,7 +136,10 @@ const Home = () => {
                   <h3 className="text-lg font-semibold mb-2">{dish.name}</h3>
                   <div className="flex justify-between items-center">
                     <span className="text-2xl font-bold text-primary-600">{dish.price}</span>
-                    <button className="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors">
+                    <button 
+                      onClick={() => handleAddToCart(dish)}
+                      className="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors"
+                    >
                       + Panier
                     </button>
                   </div>

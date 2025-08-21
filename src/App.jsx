@@ -3,6 +3,7 @@ import Layout from './components/layout/Layout'
 import Home from './pages/public/Home'
 import Menu from './pages/menu/Menu'
 import Login from './pages/auth/Login'
+import Register from './pages/auth/Register'
 import { ROUTES } from './constants'
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         
         {/* Routes sans layout (auth) */}
         <Route path={ROUTES.LOGIN} element={<Login />} />
+        <Route path={ROUTES.REGISTER} element={<Register />} />
         
         {/* Catch all route */}
         <Route path="*" element={
