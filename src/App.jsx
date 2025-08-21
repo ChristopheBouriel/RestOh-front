@@ -4,6 +4,11 @@ import Home from './pages/public/Home'
 import Menu from './pages/menu/Menu'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
+import Profile from './pages/profile/Profile'
+import Orders from './pages/orders/Orders'
+import Reservations from './pages/reservations/Reservations'
+import Contact from './pages/contact/Contact'
+import ProtectedRoute from './components/common/ProtectedRoute'
 import { ROUTES } from './constants'
 
 function App() {
@@ -13,6 +18,24 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path={ROUTES.MENU} element={<Menu />} />
+          <Route path={ROUTES.CONTACT} element={<Contact />} />
+          
+          {/* Protected Routes */}
+          <Route path={ROUTES.PROFILE} element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
+          <Route path={ROUTES.ORDERS} element={
+            <ProtectedRoute>
+              <Orders />
+            </ProtectedRoute>
+          } />
+          <Route path={ROUTES.RESERVATIONS} element={
+            <ProtectedRoute>
+              <Reservations />
+            </ProtectedRoute>
+          } />
         </Route>
         
         {/* Routes sans layout (auth) */}

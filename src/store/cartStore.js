@@ -8,12 +8,12 @@ const useCartStore = create(
       items: [],
       isOpen: false,
       
-      // Computed values
-      get totalItems() {
+      // Computed values - exposed as regular functions
+      getTotalItems: () => {
         return get().items.reduce((total, item) => total + item.quantity, 0)
       },
       
-      get totalPrice() {
+      getTotalPrice: () => {
         return get().items.reduce((total, item) => total + (item.price * item.quantity), 0)
       },
 

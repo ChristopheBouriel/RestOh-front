@@ -5,8 +5,8 @@ export const useCart = () => {
   const {
     items,
     isOpen,
-    totalItems,
-    totalPrice,
+    getTotalItems,
+    getTotalPrice,
     addItem,
     removeItem,
     updateQuantity,
@@ -19,6 +19,9 @@ export const useCart = () => {
     isItemInCart,
     getItemQuantity
   } = useCartStore()
+
+  const totalItems = getTotalItems()
+  const totalPrice = getTotalPrice()
 
   const handleAddItem = (product) => {
     addItem(product)
