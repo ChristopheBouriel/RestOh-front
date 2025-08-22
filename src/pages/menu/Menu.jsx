@@ -140,7 +140,7 @@ const Menu = () => {
         {filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition-shadow">
+              <div key={item.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
                 <div className="h-48 overflow-hidden">
                   <ImageWithFallback
                     src={item.image}
@@ -148,7 +148,7 @@ const Menu = () => {
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <div className="p-4">
+                <div className="p-4 flex-1 flex flex-col">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
                     <span className="text-lg font-bold text-primary-600">€{item.price.toFixed(2)}</span>
@@ -180,7 +180,7 @@ const Menu = () => {
                   
                   <button
                     onClick={() => handleAddToCart(item)}
-                    className="w-full bg-primary-600 text-white py-2 rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                    className="w-full bg-primary-600 text-white py-2 rounded-lg hover:bg-primary-700 transition-colors font-medium mt-auto"
                   >
                     Ajouter au panier
                   </button>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Menu, X, ShoppingCart, User, LogOut } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useCart } from '../../hooks/useCart'
@@ -9,11 +9,25 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, isAuthenticated, logout } = useAuth()
   const { totalItems, toggleCart } = useCart()
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
   const toggleUserMenu = () => setIsUserMenuOpen(!isUserMenuOpen)
+
+  // Function to check if a nav item is active
+  const isActiveRoute = (path) => {
+    // Exact match for most routes
+    if (location.pathname === path) return true
+    
+    // Special case for home route - only active if exactly '/'
+    if (path === ROUTES.HOME) return location.pathname === '/'
+    
+    // For other routes, also match if current path starts with the route path
+    // This handles sub-routes (e.g., /menu/item-1 should highlight Menu)
+    return path !== ROUTES.HOME && location.pathname.startsWith(path)
+  }
 
   const navItems = [
     { label: 'Accueil', path: ROUTES.HOME },
@@ -37,7 +51,11 @@ const Header = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
+                className={`font-medium transition-colors ${
+                  isActiveRoute(item.path)
+                    ? 'text-primary-600 border-b-2 border-primary-600 pb-1'
+                    : 'text-gray-700 hover:text-primary-600'
+                }`}
               >
                 {item.label}
               </Link>
@@ -143,7 +161,11 @@ const Header = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMenuOpen(false)}
-                  className="block px-3 py-2 text-gray-700 hover:text-primary-600 font-medium transition-colors"
+                  className={`block px-3 py-2 font-medium transition-colors ${
+                    isActiveRoute(item.path)
+                      ? 'text-primary-600 bg-primary-50 border-l-4 border-primary-600'
+                      : 'text-gray-700 hover:text-primary-600 hover:bg-primary-50'
+                  }`}
                 >
                   {item.label}
                 </Link>

@@ -136,7 +136,7 @@ const Home = () => {
             ) : (
               // Plats populaires depuis le store
               popularItems.slice(0, 4).map((dish) => (
-                <div key={dish.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div key={dish.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
                   <div className="h-48 bg-gray-200 overflow-hidden">
                     <ImageWithFallback
                       src={dish.image} 
@@ -144,10 +144,10 @@ const Home = () => {
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
                   </div>
-                  <div className="p-4">
+                  <div className="p-4 flex-1 flex flex-col">
                     <span className="text-sm text-primary-600 font-medium capitalize">{dish.category}</span>
                     <h3 className="text-lg font-semibold mb-2">{dish.name}</h3>
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center mt-auto">
                       <span className="text-2xl font-bold text-primary-600">€{dish.price.toFixed(2)}</span>
                       <button 
                         onClick={() => handleAddToCart(dish)}
