@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { Search, Filter } from 'lucide-react'
 import { useCart } from '../../hooks/useCart'
 import { useMenu } from '../../hooks/useMenu'
+import ImageWithFallback from '../../components/common/ImageWithFallback'
 
 const Menu = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -141,7 +142,7 @@ const Menu = () => {
             {filteredItems.map((item) => (
               <div key={item.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="h-48 overflow-hidden">
-                  <img
+                  <ImageWithFallback
                     src={item.image}
                     alt={item.name}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"

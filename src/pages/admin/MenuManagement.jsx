@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { useMenu } from '../../hooks/useMenu'
+import ImageWithFallback from '../../components/common/ImageWithFallback'
 
 const MenuManagement = () => {
   const [filteredItems, setFilteredItems] = useState([])
@@ -255,7 +256,7 @@ const MenuManagement = () => {
         {filteredItems.map((item) => (
           <div key={item.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="relative">
-              <img
+              <ImageWithFallback
                 src={item.image}
                 alt={item.name}
                 className="w-full h-48 object-cover"

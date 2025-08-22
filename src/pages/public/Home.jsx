@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { ChefHat, Star, Clock, Users } from 'lucide-react'
 import { useCart } from '../../hooks/useCart'
 import { useMenu } from '../../hooks/useMenu'
+import ImageWithFallback from '../../components/common/ImageWithFallback'
 import { ROUTES } from '../../constants'
 
 const Home = () => {
@@ -137,7 +138,7 @@ const Home = () => {
               popularItems.slice(0, 4).map((dish) => (
                 <div key={dish.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="h-48 bg-gray-200 overflow-hidden">
-                    <img 
+                    <ImageWithFallback
                       src={dish.image} 
                       alt={dish.name}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
