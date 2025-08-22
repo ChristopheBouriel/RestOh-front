@@ -91,6 +91,15 @@ const Header = () => {
                     >
                       Mes Réservations
                     </Link>
+                    {user?.role === 'admin' && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="block px-4 py-2 text-sm text-primary-600 hover:bg-primary-50 font-medium"
+                      >
+                        🛡️ Panel Admin
+                      </Link>
+                    )}
                     <hr className="my-1" />
                     <button
                       onClick={() => {

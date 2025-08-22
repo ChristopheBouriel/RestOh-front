@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Layout from './components/layout/Layout'
+import AdminLayout from './components/admin/AdminLayout'
 import Home from './pages/public/Home'
 import Menu from './pages/menu/Menu'
 import Login from './pages/auth/Login'
@@ -8,6 +9,8 @@ import Profile from './pages/profile/Profile'
 import Orders from './pages/orders/Orders'
 import Reservations from './pages/reservations/Reservations'
 import Contact from './pages/contact/Contact'
+import Dashboard from './pages/admin/Dashboard'
+import MenuManagement from './pages/admin/MenuManagement'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import { ROUTES } from './constants'
 
@@ -36,6 +39,16 @@ function App() {
               <Reservations />
             </ProtectedRoute>
           } />
+        </Route>
+        
+        {/* Admin Routes */}
+        <Route path="/admin" element={
+          <ProtectedRoute>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<Dashboard />} />
+          <Route path="menu" element={<MenuManagement />} />
         </Route>
         
         {/* Routes sans layout (auth) */}

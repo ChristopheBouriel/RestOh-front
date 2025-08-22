@@ -1,17 +1,18 @@
 import { Link } from 'react-router-dom'
 import { ChefHat, Star, Clock, Users } from 'lucide-react'
 import { useCart } from '../../hooks/useCart'
+import { useMenu } from '../../hooks/useMenu'
 import { ROUTES } from '../../constants'
 
 const Home = () => {
   const { addItem } = useCart()
+  const { popularItems, isLoading } = useMenu()
 
   const handleAddToCart = (dish) => {
-    // Convertir les données du plat pour le panier
     const cartItem = {
-      id: dish.name.toLowerCase().replace(/\s+/g, '-'), // Simple ID basé sur le nom
+      id: dish.id,
       name: dish.name,
-      price: parseFloat(dish.price.replace('€', '')),
+      price: dish.price,
       image: dish.image,
       category: dish.category
     }
@@ -116,36 +117,48 @@ const Home = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Plats populaires avec vraies images */}
-            {[
-              { name: 'Pizza Margherita', price: '15.90€', category: 'Pizza', image: '/images/menu/pizza-margherita.jpg' },
-              { name: 'Salade César', price: '12.50€', category: 'Entrée', image: '/images/menu/salade-cesar.jpg' },
-              { name: 'Burger Gourmand', price: '18.00€', category: 'Plat', image: '/images/menu/burger-gourmand.jpg' },
-              { name: 'Tiramisu Maison', price: '7.50€', category: 'Dessert', image: '/images/menu/tiramisu-maison.jpg' },
-            ].map((dish, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="h-48 bg-gray-200 overflow-hidden">
-                  <img 
-                    src={dish.image} 
-                    alt={dish.name}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <div className="p-4">
-                  <span className="text-sm text-primary-600 font-medium">{dish.category}</span>
-                  <h3 className="text-lg font-semibold mb-2">{dish.name}</h3>
-                  <div className="flex justify-between items-center">
-                    <span className="text-2xl font-bold text-primary-600">{dish.price}</span>
-                    <button 
-                      onClick={() => handleAddToCart(dish)}
-                      className="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors"
-                    >
-                      + Panier
-                    </button>
+            {isLoading ? (
+              // Loading skeleton
+              [1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
+                  <div className="h-48 bg-gray-200"></div>
+                  <div className="p-4">
+                    <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
+                    <div className="h-6 bg-gray-200 rounded w-2/3 mb-4"></div>
+                    <div className="flex justify-between items-center">
+                      <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+                      <div className="h-10 bg-gray-200 rounded w-1/3"></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              // Plats populaires depuis le store
+              popularItems.slice(0, 4).map((dish) => (
+                <div key={dish.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                  <div className="h-48 bg-gray-200 overflow-hidden">
+                    <img 
+                      src={dish.image} 
+                      alt={dish.name}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <span className="text-sm text-primary-600 font-medium capitalize">{dish.category}</span>
+                    <h3 className="text-lg font-semibold mb-2">{dish.name}</h3>
+                    <div className="flex justify-between items-center">
+                      <span className="text-2xl font-bold text-primary-600">€{dish.price.toFixed(2)}</span>
+                      <button 
+                        onClick={() => handleAddToCart(dish)}
+                        className="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors"
+                      >
+                        + Panier
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
           
           <div className="text-center mt-12">
