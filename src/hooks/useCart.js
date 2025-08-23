@@ -1,10 +1,10 @@
 import { toast } from 'react-hot-toast'
 import useCartStore from '../store/cartStore'
+import { useCartUI } from '../contexts/CartUIContext'
 
 export const useCart = () => {
   const {
     items,
-    isOpen,
     getTotalItems,
     getTotalPrice,
     addItem,
@@ -13,12 +13,12 @@ export const useCart = () => {
     increaseQuantity,
     decreaseQuantity,
     clearCart,
-    toggleCart,
-    openCart,
-    closeCart,
     isItemInCart,
     getItemQuantity
   } = useCartStore()
+  
+  // État UI du panier depuis le contexte
+  const { isCartOpen: isOpen, openCart, closeCart, toggleCart } = useCartUI()
 
   const totalItems = getTotalItems()
   const totalPrice = getTotalPrice()

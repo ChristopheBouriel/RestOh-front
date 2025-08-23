@@ -1,12 +1,14 @@
 import { Outlet } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { CartUIProvider } from '../../contexts/CartUIContext'
 import Header from './Header'
 import Footer from './Footer'
 import CartModal from '../common/CartModal'
 
 const Layout = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <CartUIProvider>
+      <div className="min-h-screen flex flex-col">
       <Header />
       
       <main className="flex-1">
@@ -39,7 +41,8 @@ const Layout = () => {
           },
         }}
       />
-    </div>
+      </div>
+    </CartUIProvider>
   )
 }
 

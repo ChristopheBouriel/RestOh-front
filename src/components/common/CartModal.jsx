@@ -1,13 +1,13 @@
 import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../hooks/useCart'
+import { useCartUI } from '../../contexts/CartUIContext'
 import { ROUTES } from '../../constants'
 
 const CartModal = () => {
   const navigate = useNavigate()
   const {
     items,
-    isOpen,
     totalItems,
     formattedTotalPrice,
     isEmpty,
@@ -15,9 +15,10 @@ const CartModal = () => {
     decreaseQuantity,
     removeItem,
     clearCart,
-    closeCart,
     formatPrice
   } = useCart()
+  
+  const { isCartOpen: isOpen, closeCart } = useCartUI()
 
   if (!isOpen) return null
 

@@ -6,7 +6,6 @@ const useCartStore = create(
     (set, get) => ({
       // État
       items: [],
-      isOpen: false,
       
       // Computed values - exposed as regular functions
       getTotalItems: () => {
@@ -78,18 +77,6 @@ const useCartStore = create(
 
       clearCart: () => {
         set({ items: [] })
-      },
-
-      toggleCart: () => {
-        set({ isOpen: !get().isOpen })
-      },
-
-      openCart: () => {
-        set({ isOpen: true })
-      },
-
-      closeCart: () => {
-        set({ isOpen: false })
       },
 
       // Utilitaires
