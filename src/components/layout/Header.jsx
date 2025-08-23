@@ -62,9 +62,9 @@ const Header = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`font-medium transition-colors ${
+                className={`font-medium transition-colors px-3 py-2 rounded-lg ${
                   isActiveRoute(item.path)
-                    ? 'text-primary-600 border-b-2 border-primary-600 pb-1'
+                    ? 'text-primary-600 border-2 border-primary-600'
                     : 'text-gray-700 hover:text-primary-600'
                 }`}
               >
