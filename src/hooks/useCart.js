@@ -1,5 +1,6 @@
 import { toast } from 'react-hot-toast'
 import useCartStore from '../store/cartStore'
+import useAuthStore from '../store/authStore'
 import { useCartUI } from '../contexts/CartUIContext'
 
 export const useCart = () => {
@@ -41,6 +42,16 @@ export const useCart = () => {
   const totalPrice = getTotalPrice()
 
   const handleAddItem = (product) => {
+    // Vérifier si l'utilisateur est connecté
+    const { isAuthenticated } = useAuthStore.getState()
+    
+    if (!isAuthenticated) {
+      // Afficher un message d'erreur si non connecté
+      toast.error('Veuillez vous connecter avant d\'alimenter votre panier')
+      return
+    }
+    
+    // Ajouter l'article si connecté
     addItem(product)
     toast.success(`${product.name} ajouté au panier`)
     // Ouvrir brièvement le panier pour feedback visuel
