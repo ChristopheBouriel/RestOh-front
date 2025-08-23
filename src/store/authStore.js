@@ -1,5 +1,12 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { hashPassword, verifyPassword } from '../utils/crypto'
+
+// Hashs pré-calculés pour les comptes par défaut (SHA-256)
+const DEFAULT_PASSWORDS = {
+  admin: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', // admin123
+  client: '186474c1f2c2f735a54c2cf82ee8e87f2a5cd30940e280029363fecedfc5328c'  // client123
+}
 
 const useAuthStore = create(
   persist(
@@ -39,6 +46,11 @@ const useAuthStore = create(
           
           let mockUser
           if (existingUser) {
+            // Vérifier le mot de passe pour l'utilisateur enregistré (hashé)
+            const isValidPassword = await verifyPassword(credentials.password, existingUser.password)
+            if (!isValidPassword) {
+              throw new Error('Mot de passe incorrect')
+            }
             // Utiliser les données de l'utilisateur enregistré
             mockUser = {
               id: existingUser.id,
@@ -47,6 +59,11 @@ const useAuthStore = create(
               role: existingUser.role || 'user'
             }
           } else if (credentials.email === 'admin@restoh.fr') {
+            // Vérifier le mot de passe admin (hashé)
+            const isValidPassword = await verifyPassword(credentials.password, DEFAULT_PASSWORDS.admin)
+            if (!isValidPassword) {
+              throw new Error('Mot de passe incorrect')
+            }
             // Utilisateur admin par défaut
             mockUser = {
               id: 'admin',
@@ -54,7 +71,12 @@ const useAuthStore = create(
               name: 'Administrateur',
               role: 'admin'
             }
-          } else if (credentials.email === 'client@restoh.fr') {
+          } else if (credentials.email === 'client@example.com') {
+            // Vérifier le mot de passe client (hashé)
+            const isValidPassword = await verifyPassword(credentials.password, DEFAULT_PASSWORDS.client)
+            if (!isValidPassword) {
+              throw new Error('Mot de passe incorrect')
+            }
             // Utilisateur client par défaut  
             mockUser = {
               id: 'client',
@@ -97,10 +119,14 @@ const useAuthStore = create(
           // Simulation d'appel API
           await new Promise(resolve => setTimeout(resolve, 1000))
           
+          // Hasher le mot de passe avant de le stocker
+          const hashedPassword = await hashPassword(userData.password)
+          
           const newUser = {
             id: Date.now(),
             email: userData.email,
             name: userData.name,
+            password: hashedPassword, // Stocker le mot de passe hashé
             role: 'user'
           }
           
