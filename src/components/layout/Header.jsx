@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Menu, X, ShoppingCart, User, LogOut } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useCart } from '../../hooks/useCart'
+import { useCartUI } from '../../contexts/CartUIContext'
 import { ROUTES } from '../../constants'
 
 const Header = () => {
@@ -11,7 +12,17 @@ const Header = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, isAuthenticated, logout } = useAuth()
-  const { totalItems, totalItemsAvailable, hasUnavailableItems, toggleCart } = useCart()
+  const { totalItems, totalItemsAvailable, hasUnavailableItems } = useCart()
+  const { toggleCart, closeCart } = useCartUI()
+  
+  // Fermer le panier quand on clique sur les éléments du header
+  const handleHeaderClick = (event) => {
+    // Ne pas fermer si on clique sur le bouton panier ou ses enfants
+    const cartButton = event.target.closest('[data-cart-button]')
+    if (!cartButton) {
+      closeCart()
+    }
+  }
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
   const toggleUserMenu = () => setIsUserMenuOpen(!isUserMenuOpen)
@@ -37,7 +48,7 @@ const Header = () => {
   ]
 
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
+    <header className="bg-white shadow-md sticky top-0 z-50" onClick={handleHeaderClick}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -66,6 +77,7 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-4">
             <button
               onClick={toggleCart}
+              data-cart-button
               className="relative p-2 text-gray-700 hover:text-primary-600 transition-colors"
             >
               <ShoppingCart size={20} />
