@@ -11,7 +11,7 @@ const Header = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, isAuthenticated, logout } = useAuth()
-  const { totalItems, toggleCart } = useCart()
+  const { totalItems, totalItemsAvailable, hasUnavailableItems, toggleCart } = useCart()
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
   const toggleUserMenu = () => setIsUserMenuOpen(!isUserMenuOpen)
@@ -70,8 +70,15 @@ const Header = () => {
             >
               <ShoppingCart size={20} />
               {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {totalItems}
+                <span className={`absolute -top-2 -right-2 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center ${
+                  hasUnavailableItems ? 'bg-red-500' : 'bg-primary-600'
+                }`}>
+                  {totalItemsAvailable}
+                </span>
+              )}
+              {hasUnavailableItems && totalItemsAvailable > 0 && (
+                <span className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 text-xs rounded-full h-3 w-3 flex items-center justify-center font-bold">
+                  !
                 </span>
               )}
             </button>

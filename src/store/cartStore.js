@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import useMenuStore from './menuStore'
 
 const useCartStore = create(
   persist(
@@ -138,13 +139,55 @@ const useCartStore = create(
         return item ? item.quantity : 0
       },
 
+      // Nouvelles fonctions pour la synchronisation avec le menu
+      getEnrichedItems: () => {
+        const cart = get().getCurrentUserCart()
+        const cartItems = cart.items
+        const menuItems = useMenuStore.getState().items
+        
+        return cartItems.map(cartItem => {
+          const menuItem = menuItems.find(menu => menu.id === cartItem.id)
+          
+          return {
+            ...cartItem,
+            isAvailable: menuItem ? menuItem.available : false,
+            currentPrice: menuItem ? menuItem.price : cartItem.price,
+            stillExists: !!menuItem
+          }
+        })
+      },
+
+      getAvailableItems: () => {
+        return get().getEnrichedItems().filter(item => item.isAvailable && item.stillExists)
+      },
+
+      getUnavailableItems: () => {
+        return get().getEnrichedItems().filter(item => !item.isAvailable || !item.stillExists)
+      },
+
+      getTotalPriceAvailable: () => {
+        return get().getAvailableItems().reduce((total, item) => total + (item.currentPrice * item.quantity), 0)
+      },
+
+      getTotalItemsAvailable: () => {
+        return get().getAvailableItems().reduce((total, item) => total + item.quantity, 0)
+      },
+
+      // Fonction pour synchroniser le panier avec les changements du menu
+      syncWithMenu: () => {
+        console.log('🔄 Synchronisation du panier avec le menu')
+        // Pour l'instant, on ne fait que signaler la synchronisation
+        // L'enrichissement se fait à la volée via getEnrichedItems()
+      },
+
       // Fonction de debug pour voir l'état actuel
       debugLogState: () => {
         const state = get()
         console.log('🧽 Debug - Current cart state:', {
           currentUserId: state.currentUserId,
           userCarts: state.userCarts,
-          currentCart: state.getCurrentUserCart()
+          currentCart: state.getCurrentUserCart(),
+          enrichedItems: state.getEnrichedItems()
         })
       }
     }),

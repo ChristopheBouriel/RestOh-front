@@ -1,4 +1,5 @@
-import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react'
+import React from 'react'
+import { X, Plus, Minus, Trash2, ShoppingBag, AlertTriangle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../hooks/useCart'
 import { useCartUI } from '../../contexts/CartUIContext'
@@ -11,14 +12,28 @@ const CartModal = () => {
     totalItems,
     formattedTotalPrice,
     isEmpty,
+    enrichedItems,
+    availableItems,
+    unavailableItems,
+    totalItemsAvailable,
+    formattedTotalPriceAvailable,
+    hasUnavailableItems,
     increaseQuantity,
     decreaseQuantity,
     removeItem,
     clearCart,
+    syncWithMenu,
     formatPrice
   } = useCart()
   
   const { isCartOpen: isOpen, closeCart } = useCartUI()
+  
+  // Synchroniser avec le menu à l'ouverture du panier
+  React.useEffect(() => {
+    if (isOpen) {
+      syncWithMenu()
+    }
+  }, [isOpen, syncWithMenu])
 
   if (!isOpen) return null
 
@@ -74,45 +89,103 @@ const CartModal = () => {
             </div>
           ) : (
             <div className="p-4 space-y-4">
-              {items.map((item) => (
-                <div key={item.id} className="flex items-center space-x-3 bg-gray-50 rounded-lg p-3">
+              {/* Alert si articles indisponibles */}
+              {hasUnavailableItems && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                  <div className="flex items-center">
+                    <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
+                    <p className="text-sm text-red-700">
+                      {unavailableItems.length} article(s) non disponible(s) dans votre panier
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {enrichedItems.map((item) => (
+                <div 
+                  key={item.id} 
+                  className={`flex items-center space-x-3 rounded-lg p-3 ${
+                    !item.isAvailable || !item.stillExists 
+                      ? 'bg-red-50 border border-red-200' 
+                      : 'bg-gray-50'
+                  }`}
+                >
                   {/* Image */}
-                  <div className="w-16 h-16 bg-gray-200 rounded-md overflow-hidden flex-shrink-0">
+                  <div className="w-16 h-16 bg-gray-200 rounded-md overflow-hidden flex-shrink-0 relative">
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover ${
+                        !item.isAvailable || !item.stillExists ? 'opacity-50 grayscale' : ''
+                      }`}
                     />
+                    {(!item.isAvailable || !item.stillExists) && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="bg-red-500 text-white text-xs px-1 py-0.5 rounded">
+                          {!item.stillExists ? 'SUPPRIMÉ' : 'INDISPO'}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 truncate">
+                    <h3 className={`font-medium truncate ${
+                      !item.isAvailable || !item.stillExists 
+                        ? 'text-red-700 line-through' 
+                        : 'text-gray-900'
+                    }`}>
                       {item.name}
                     </h3>
-                    <p className="text-sm text-gray-500">
-                      {formatPrice(item.price)} l'unité
+                    <p className={`text-sm ${
+                      !item.isAvailable || !item.stillExists 
+                        ? 'text-red-500' 
+                        : 'text-gray-500'
+                    }`}>
+                      {formatPrice(item.currentPrice)} l'unité
                     </p>
-                    <p className="text-sm font-medium text-primary-600">
-                      {formatPrice(item.price * item.quantity)}
-                    </p>
+                    {(item.isAvailable && item.stillExists) ? (
+                      <p className="text-sm font-medium text-primary-600">
+                        {formatPrice(item.currentPrice * item.quantity)}
+                      </p>
+                    ) : (
+                      <p className="text-sm font-medium text-red-500">
+                        Non inclus dans le total
+                      </p>
+                    )}
                   </div>
 
                   {/* Quantity controls */}
                   <div className="flex items-center space-x-2">
-                    <div className="flex items-center space-x-1 bg-white rounded-md border">
+                    <div className={`flex items-center space-x-1 rounded-md border ${
+                      !item.isAvailable || !item.stillExists 
+                        ? 'bg-red-100 border-red-300' 
+                        : 'bg-white'
+                    }`}>
                       <button
                         onClick={() => decreaseQuantity(item.id)}
-                        className="p-1 hover:bg-gray-50 rounded-l-md transition-colors"
+                        disabled={!item.isAvailable || !item.stillExists}
+                        className={`p-1 rounded-l-md transition-colors ${
+                          !item.isAvailable || !item.stillExists
+                            ? 'text-red-400 cursor-not-allowed'
+                            : 'hover:bg-gray-50'
+                        }`}
                       >
                         <Minus className="w-4 h-4" />
                       </button>
-                      <span className="px-2 py-1 text-sm font-medium min-w-[2rem] text-center">
+                      <span className={`px-2 py-1 text-sm font-medium min-w-[2rem] text-center ${
+                        !item.isAvailable || !item.stillExists ? 'text-red-600' : ''
+                      }`}>
                         {item.quantity}
                       </span>
                       <button
                         onClick={() => increaseQuantity(item.id)}
-                        className="p-1 hover:bg-gray-50 rounded-r-md transition-colors"
+                        disabled={!item.isAvailable || !item.stillExists}
+                        className={`p-1 rounded-r-md transition-colors ${
+                          !item.isAvailable || !item.stillExists
+                            ? 'text-red-400 cursor-not-allowed'
+                            : 'hover:bg-gray-50'
+                        }`}
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -142,17 +215,43 @@ const CartModal = () => {
         {/* Footer */}
         {!isEmpty && (
           <div className="border-t p-4 space-y-4">
-            <div className="flex justify-between items-center text-lg font-semibold">
-              <span>Total:</span>
-              <span className="text-primary-600">{formattedTotalPrice}</span>
+            {/* Totaux détaillés */}
+            <div className="space-y-2">
+              {hasUnavailableItems && (
+                <>
+                  <div className="flex justify-between items-center text-sm text-gray-600">
+                    <span>Total original:</span>
+                    <span className="line-through">{formattedTotalPrice}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm text-green-600">
+                    <span>Total disponible ({totalItemsAvailable} articles):</span>
+                    <span>{formattedTotalPriceAvailable}</span>
+                  </div>
+                </>
+              )}
+              
+              <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
+                <span>Total à payer:</span>
+                <span className="text-primary-600">
+                  {hasUnavailableItems ? formattedTotalPriceAvailable : formattedTotalPrice}
+                </span>
+              </div>
             </div>
             
             <div className="space-y-2">
               <button
                 onClick={handleCheckout}
-                className="w-full bg-primary-600 text-white py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                disabled={totalItemsAvailable === 0}
+                className={`w-full py-3 rounded-lg font-medium transition-colors ${
+                  totalItemsAvailable === 0
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-primary-600 text-white hover:bg-primary-700'
+                }`}
               >
-                Commander - {formattedTotalPrice}
+                {totalItemsAvailable === 0 
+                  ? 'Aucun article disponible'
+                  : `Commander - ${hasUnavailableItems ? formattedTotalPriceAvailable : formattedTotalPrice}`
+                }
               </button>
               
               <button

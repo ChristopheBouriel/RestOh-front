@@ -7,6 +7,11 @@ export const useCart = () => {
     getCurrentUserCart,
     getTotalItems,
     getTotalPrice,
+    getEnrichedItems,
+    getAvailableItems,
+    getUnavailableItems,
+    getTotalPriceAvailable,
+    getTotalItemsAvailable,
     addItem,
     removeItem,
     updateQuantity,
@@ -14,12 +19,20 @@ export const useCart = () => {
     decreaseQuantity,
     clearCart,
     isItemInCart,
-    getItemQuantity
+    getItemQuantity,
+    syncWithMenu
   } = useCartStore()
   
   // Obtenir le panier de l'utilisateur courant
   const currentCart = getCurrentUserCart()
   const items = currentCart.items
+  
+  // Nouvelles données enrichies avec synchronisation menu
+  const enrichedItems = getEnrichedItems()
+  const availableItems = getAvailableItems()
+  const unavailableItems = getUnavailableItems()
+  const totalPriceAvailable = getTotalPriceAvailable()
+  const totalItemsAvailable = getTotalItemsAvailable()
   
   // État UI du panier depuis le contexte
   const { isCartOpen: isOpen, openCart, closeCart, toggleCart } = useCartUI()
@@ -59,6 +72,11 @@ export const useCart = () => {
     closeCart()
   }
 
+  const handleSyncWithMenu = () => {
+    syncWithMenu()
+    console.log('🔄 Panier synchronisé avec le menu')
+  }
+
   // Formatage du prix
   const formatPrice = (price) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -68,13 +86,22 @@ export const useCart = () => {
   }
 
   return {
-    // État
+    // État original
     items,
     isOpen,
     totalItems,
     totalPrice: totalPrice,
     formattedTotalPrice: formatPrice(totalPrice),
     isEmpty: items.length === 0,
+
+    // Nouvel état enrichi avec synchronisation menu
+    enrichedItems,
+    availableItems,
+    unavailableItems,
+    totalItemsAvailable,
+    totalPriceAvailable,
+    formattedTotalPriceAvailable: formatPrice(totalPriceAvailable),
+    hasUnavailableItems: unavailableItems.length > 0,
 
     // Actions avec feedback
     addItem: handleAddItem,
@@ -83,6 +110,7 @@ export const useCart = () => {
     increaseQuantity,
     decreaseQuantity,
     clearCart: handleClearCart,
+    syncWithMenu: handleSyncWithMenu,
     
     // UI
     toggleCart,
