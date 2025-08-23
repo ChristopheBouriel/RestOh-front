@@ -4,7 +4,7 @@ import { useCartUI } from '../contexts/CartUIContext'
 
 export const useCart = () => {
   const {
-    items,
+    getCurrentUserCart,
     getTotalItems,
     getTotalPrice,
     addItem,
@@ -16,6 +16,10 @@ export const useCart = () => {
     isItemInCart,
     getItemQuantity
   } = useCartStore()
+  
+  // Obtenir le panier de l'utilisateur courant
+  const currentCart = getCurrentUserCart()
+  const items = currentCart.items
   
   // État UI du panier depuis le contexte
   const { isCartOpen: isOpen, openCart, closeCart, toggleCart } = useCartUI()

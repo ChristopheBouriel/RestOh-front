@@ -4,27 +4,70 @@ import { persist } from 'zustand/middleware'
 const useCartStore = create(
   persist(
     (set, get) => ({
-      // État
-      items: [],
+      // État - maintenant organisé par utilisateur
+      userCarts: {}, // { userId: { items: [] }, ... }
+      currentUserId: null,
       
-      // Computed values - exposed as regular functions
+      // Fonctions utilitaires pour la gestion par utilisateur
+      setCurrentUser: (userId) => {
+        set({ currentUserId: userId })
+        // Initialiser le panier de l'utilisateur s'il n'existe pas
+        const state = get()
+        if (userId && !state.userCarts[userId]) {
+          set({
+            userCarts: {
+              ...state.userCarts,
+              [userId]: { items: [] }
+            }
+          })
+        }
+      },
+
+      getCurrentUserCart: () => {
+        const state = get()
+        const userId = state.currentUserId
+        if (!userId || !state.userCarts[userId]) {
+          return { items: [] }
+        }
+        return state.userCarts[userId]
+      },
+
+      updateCurrentUserCart: (updates) => {
+        const state = get()
+        const userId = state.currentUserId
+        if (!userId) return
+
+        set({
+          userCarts: {
+            ...state.userCarts,
+            [userId]: {
+              ...state.userCarts[userId],
+              ...updates
+            }
+          }
+        })
+      },
+
+      // Computed values - mis à jour pour l'utilisateur courant
       getTotalItems: () => {
-        return get().items.reduce((total, item) => total + item.quantity, 0)
+        const cart = get().getCurrentUserCart()
+        return cart.items.reduce((total, item) => total + item.quantity, 0)
       },
       
       getTotalPrice: () => {
-        return get().items.reduce((total, item) => total + (item.price * item.quantity), 0)
+        const cart = get().getCurrentUserCart()
+        return cart.items.reduce((total, item) => total + (item.price * item.quantity), 0)
       },
 
-      // Actions
+      // Actions - mis à jour pour l'utilisateur courant
       addItem: (product) => {
-        const items = get().items
-        const existingItem = items.find(item => item.id === product.id)
+        const cart = get().getCurrentUserCart()
+        const existingItem = cart.items.find(item => item.id === product.id)
         
         if (existingItem) {
           // Si l'item existe, augmenter la quantité
-          set({
-            items: items.map(item =>
+          get().updateCurrentUserCart({
+            items: cart.items.map(item =>
               item.id === product.id
                 ? { ...item, quantity: item.quantity + 1 }
                 : item
@@ -32,15 +75,16 @@ const useCartStore = create(
           })
         } else {
           // Sinon, ajouter le nouvel item
-          set({
-            items: [...items, { ...product, quantity: 1 }]
+          get().updateCurrentUserCart({
+            items: [...cart.items, { ...product, quantity: 1 }]
           })
         }
       },
 
       removeItem: (productId) => {
-        set({
-          items: get().items.filter(item => item.id !== productId)
+        const cart = get().getCurrentUserCart()
+        get().updateCurrentUserCart({
+          items: cart.items.filter(item => item.id !== productId)
         })
       },
 
@@ -50,8 +94,9 @@ const useCartStore = create(
           return
         }
         
-        set({
-          items: get().items.map(item =>
+        const cart = get().getCurrentUserCart()
+        get().updateCurrentUserCart({
+          items: cart.items.map(item =>
             item.id === productId
               ? { ...item, quantity }
               : item
@@ -60,14 +105,16 @@ const useCartStore = create(
       },
 
       increaseQuantity: (productId) => {
-        const item = get().items.find(item => item.id === productId)
+        const cart = get().getCurrentUserCart()
+        const item = cart.items.find(item => item.id === productId)
         if (item) {
           get().updateQuantity(productId, item.quantity + 1)
         }
       },
 
       decreaseQuantity: (productId) => {
-        const item = get().items.find(item => item.id === productId)
+        const cart = get().getCurrentUserCart()
+        const item = cart.items.find(item => item.id === productId)
         if (item && item.quantity > 1) {
           get().updateQuantity(productId, item.quantity - 1)
         } else if (item && item.quantity === 1) {
@@ -76,22 +123,36 @@ const useCartStore = create(
       },
 
       clearCart: () => {
-        set({ items: [] })
+        get().updateCurrentUserCart({ items: [] })
       },
 
-      // Utilitaires
+      // Utilitaires - mis à jour pour l'utilisateur courant
       isItemInCart: (productId) => {
-        return get().items.some(item => item.id === productId)
+        const cart = get().getCurrentUserCart()
+        return cart.items.some(item => item.id === productId)
       },
 
       getItemQuantity: (productId) => {
-        const item = get().items.find(item => item.id === productId)
+        const cart = get().getCurrentUserCart()
+        const item = cart.items.find(item => item.id === productId)
         return item ? item.quantity : 0
+      },
+
+      // Fonction de debug pour voir l'état actuel
+      debugLogState: () => {
+        const state = get()
+        console.log('🧽 Debug - Current cart state:', {
+          currentUserId: state.currentUserId,
+          userCarts: state.userCarts,
+          currentCart: state.getCurrentUserCart()
+        })
       }
     }),
     {
       name: 'cart-storage',
-      partialize: (state) => ({ items: state.items }),
+      partialize: (state) => ({ 
+        userCarts: state.userCarts 
+      }),
     }
   )
 )

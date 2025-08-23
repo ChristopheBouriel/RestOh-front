@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Layout from './components/layout/Layout'
 import AdminLayout from './components/admin/AdminLayout'
@@ -12,9 +13,30 @@ import Contact from './pages/contact/Contact'
 import Dashboard from './pages/admin/Dashboard'
 import MenuManagement from './pages/admin/MenuManagement'
 import ProtectedRoute from './components/common/ProtectedRoute'
+import useAuthStore from './store/authStore'
+import useCartStore from './store/cartStore'
+import useMenuStore from './store/menuStore'
 import { ROUTES } from './constants'
 
 function App() {
+  const { user } = useAuthStore()
+  const { setCurrentUser } = useCartStore()
+  const { initializeMenu } = useMenuStore()
+
+  useEffect(() => {
+    // Initialiser le menu au démarrage
+    initializeMenu()
+  }, [initializeMenu])
+
+  useEffect(() => {
+    // Connecter l'utilisateur au panier
+    if (user) {
+      setCurrentUser(user.id)
+    } else {
+      setCurrentUser(null)
+    }
+  }, [user, setCurrentUser])
+
   return (
     <Router>
       <Routes>

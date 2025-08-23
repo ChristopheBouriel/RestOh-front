@@ -46,14 +46,25 @@ const useAuthStore = create(
               name: existingUser.name,
               role: existingUser.role || 'user'
             }
-          } else {
-            // Utilisateur de test par défaut
+          } else if (credentials.email === 'admin@restoh.fr') {
+            // Utilisateur admin par défaut
             mockUser = {
-              id: 1,
+              id: 'admin',
               email: credentials.email,
-              name: credentials.email === 'admin@restoh.fr' ? 'Administrateur' : 'Utilisateur',
-              role: credentials.email === 'admin@restoh.fr' ? 'admin' : 'user'
+              name: 'Administrateur',
+              role: 'admin'
             }
+          } else if (credentials.email === 'client@restoh.fr') {
+            // Utilisateur client par défaut  
+            mockUser = {
+              id: 'client',
+              email: credentials.email,
+              name: 'Client',
+              role: 'user'
+            }
+          } else {
+            // Utilisateur non autorisé
+            throw new Error('Utilisateur non trouvé. Veuillez vous inscrire d\'abord.')
           }
           
           const mockToken = 'mock-jwt-token-' + Date.now()
