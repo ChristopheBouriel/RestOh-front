@@ -16,17 +16,22 @@ import ProtectedRoute from './components/common/ProtectedRoute'
 import useAuthStore from './store/authStore'
 import useCartStore from './store/cartStore'
 import useMenuStore from './store/menuStore'
+import useOrdersStore from './store/ordersStore'
+import OrdersManagement from './pages/admin/OrdersManagement'
+import Checkout from './pages/checkout/Checkout'
 import { ROUTES } from './constants'
 
 function App() {
   const { user } = useAuthStore()
   const { setCurrentUser } = useCartStore()
   const { initializeMenu } = useMenuStore()
+  const { initializeOrders } = useOrdersStore()
 
   useEffect(() => {
-    // Initialiser le menu au démarrage
+    // Initialiser le menu et les commandes au démarrage
     initializeMenu()
-  }, [initializeMenu])
+    initializeOrders()
+  }, [initializeMenu, initializeOrders])
 
   useEffect(() => {
     // Connecter l'utilisateur au panier
@@ -44,6 +49,11 @@ function App() {
           <Route index element={<Home />} />
           <Route path={ROUTES.MENU} element={<Menu />} />
           <Route path={ROUTES.CONTACT} element={<Contact />} />
+          <Route path={ROUTES.CHECKOUT} element={
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          } />
           
           {/* Protected Routes */}
           <Route path={ROUTES.PROFILE} element={
@@ -71,6 +81,7 @@ function App() {
         }>
           <Route index element={<Dashboard />} />
           <Route path="menu" element={<MenuManagement />} />
+          <Route path="orders" element={<OrdersManagement />} />
         </Route>
         
         {/* Routes sans layout (auth) */}
