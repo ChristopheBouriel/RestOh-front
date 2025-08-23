@@ -3,6 +3,7 @@ import { X, Plus, Minus, Trash2, ShoppingBag, AlertTriangle } from 'lucide-react
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../hooks/useCart'
 import { useCartUI } from '../../contexts/CartUIContext'
+import ImageWithFallback from './ImageWithFallback'
 import { ROUTES } from '../../constants'
 
 const CartModal = () => {
@@ -112,7 +113,7 @@ const CartModal = () => {
                 >
                   {/* Image */}
                   <div className="w-16 h-16 bg-gray-200 rounded-md overflow-hidden flex-shrink-0 relative">
-                    <img
+                    <ImageWithFallback
                       src={item.image}
                       alt={item.name}
                       className={`w-full h-full object-cover ${
