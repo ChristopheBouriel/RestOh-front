@@ -316,6 +316,29 @@ const OrdersManagement = () => {
                   </div>
                 </div>
 
+                {/* Paiement */}
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-2">Paiement</h3>
+                  <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Moyen de paiement:</span>
+                      <span className="text-sm font-medium">
+                        {selectedOrder.paymentMethod === 'card' ? '💳 Carte bancaire' : '💰 Espèces'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Statut du règlement:</span>
+                      <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+                        selectedOrder.isPaid 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-orange-100 text-orange-700'
+                      }`}>
+                        {selectedOrder.isPaid ? '✅ Payé' : '⏳ En attente'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Total */}
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center text-lg font-bold">

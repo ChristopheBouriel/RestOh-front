@@ -30,6 +30,8 @@ const useOrdersStore = create(
               ],
               totalAmount: 44.30,
               status: 'pending', // pending, confirmed, preparing, ready, delivered, cancelled
+              paymentMethod: 'card',
+              isPaid: false,
               createdAt: '2024-01-20T14:30:00Z',
               updatedAt: '2024-01-20T14:30:00Z',
               notes: 'Commande test pour la démo'
@@ -44,6 +46,8 @@ const useOrdersStore = create(
               ],
               totalAmount: 18.00,
               status: 'delivered',
+              paymentMethod: 'cash',
+              isPaid: true,
               createdAt: '2024-01-19T12:15:00Z',
               updatedAt: '2024-01-19T13:45:00Z',
               notes: ''
