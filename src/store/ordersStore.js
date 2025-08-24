@@ -13,7 +13,7 @@ const useOrdersStore = create(
 
       // Initialiser avec des données de test
       initializeOrders: () => {
-        const stored = localStorage.getItem('admin-orders')
+        const stored = localStorage.getItem('admin-orders-v2')
         if (stored) {
           set({ orders: JSON.parse(stored) })
         } else {
@@ -55,7 +55,7 @@ const useOrdersStore = create(
           ]
           
           set({ orders: initialOrders })
-          localStorage.setItem('admin-orders', JSON.stringify(initialOrders))
+          localStorage.setItem('admin-orders-v2', JSON.stringify(initialOrders))
         }
       },
 
@@ -77,7 +77,7 @@ const useOrdersStore = create(
           
           const updatedOrders = [newOrder, ...get().orders]
           set({ orders: updatedOrders, isLoading: false })
-          localStorage.setItem('admin-orders', JSON.stringify(updatedOrders))
+          localStorage.setItem('admin-orders-v2', JSON.stringify(updatedOrders))
           
           return { success: true, orderId: newOrder.id }
         } catch (error) {
@@ -100,7 +100,7 @@ const useOrdersStore = create(
           )
           
           set({ orders: updatedOrders, isLoading: false })
-          localStorage.setItem('admin-orders', JSON.stringify(updatedOrders))
+          localStorage.setItem('admin-orders-v2', JSON.stringify(updatedOrders))
           
           return { success: true }
         } catch (error) {
