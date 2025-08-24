@@ -53,7 +53,7 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to={ROUTES.HOME} className="flex items-center">
-            <span className="text-2xl font-bold text-primary-600">RestOh</span>
+            <span className="text-2xl font-bold text-primary-600">RestOh!</span>
           </Link>
 
           {/* Navigation Desktop */}

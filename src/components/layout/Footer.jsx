@@ -10,7 +10,7 @@ const Footer = () => {
           {/* Logo et description */}
           <div className="col-span-1 lg:col-span-2">
             <Link to={ROUTES.HOME} className="flex items-center mb-4">
-              <span className="text-3xl font-bold text-primary-500">RestOh</span>
+              <span className="text-3xl font-bold text-primary-500">RestOh!</span>
             </Link>
             <p className="text-gray-300 mb-4 max-w-md">
               Savourez l'excellence culinaire dans notre restaurant. 
@@ -78,7 +78,7 @@ const Footer = () => {
             </nav>
             
             <div className="text-gray-400 text-sm">
-              © 2024 RestOh. Tous droits réservés.
+              © 2024 RestOh! Tous droits réservés.
             </div>
           </div>
         </div>
