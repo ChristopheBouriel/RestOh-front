@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Package, Eye, Clock, CheckCircle, Truck, XCircle, Filter } from 'lucide-react'
 import useOrdersStore from '../../store/ordersStore'
+import SimpleSelect from '../../components/common/SimpleSelect'
 
 const OrdersManagement = () => {
   const {
@@ -124,19 +125,20 @@ const OrdersManagement = () => {
       <div className="bg-white p-4 rounded-lg shadow-sm border">
         <div className="flex items-center space-x-4">
           <Filter className="h-5 w-5 text-gray-400" />
-          <select
+          <SimpleSelect
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            <option value="all">Toutes les commandes</option>
-            <option value="pending">En attente</option>
-            <option value="confirmed">Confirmées</option>
-            <option value="preparing">En préparation</option>
-            <option value="ready">Prêtes</option>
-            <option value="delivered">Livrées</option>
-            <option value="cancelled">Annulées</option>
-          </select>
+            onChange={(newStatus) => setFilterStatus(newStatus)}
+            className="w-[180px]"
+            options={[
+              { value: 'all', label: 'Toutes les commandes' },
+              { value: 'pending', label: 'En attente' },
+              { value: 'confirmed', label: 'Confirmées' },
+              { value: 'preparing', label: 'Préparation' },
+              { value: 'ready', label: 'Prêtes' },
+              { value: 'delivered', label: 'Livrées' },
+              { value: 'cancelled', label: 'Annulées' }
+            ]}
+          />
           <span className="text-sm text-gray-500">
             {filteredOrders.length} commande(s) affichée(s)
           </span>
@@ -223,27 +225,30 @@ const OrdersManagement = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(order.createdAt)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                        <button
-                          onClick={() => setSelectedOrder(order)}
-                          className="text-primary-600 hover:text-primary-900"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        {order.status !== 'delivered' && order.status !== 'cancelled' && (
-                          <select
-                            value={order.status}
-                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                            className="text-xs border border-gray-300 rounded px-2 py-1"
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <div className="flex items-center space-x-3">
+                          <button
+                            onClick={() => setSelectedOrder(order)}
+                            className="text-primary-600 hover:text-primary-900"
                           >
-                            <option value="pending">En attente</option>
-                            <option value="confirmed">Confirmée</option>
-                            <option value="preparing">En préparation</option>
-                            <option value="ready">Prête</option>
-                            <option value="delivered">Livrée</option>
-                            <option value="cancelled">Annulée</option>
-                          </select>
-                        )}
+                            <Eye className="h-4 w-4" />
+                          </button>
+                          {order.status !== 'delivered' && order.status !== 'cancelled' && (
+                            <SimpleSelect
+                              value={order.status}
+                              onChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                              className="w-[110px]"
+                              options={[
+                                { value: 'pending', label: 'En attente' },
+                                { value: 'confirmed', label: 'Confirmée' },
+                                { value: 'preparing', label: 'Préparation' },
+                                { value: 'ready', label: 'Prête' },
+                                { value: 'delivered', label: 'Livrée' },
+                                { value: 'cancelled', label: 'Annulée' }
+                              ]}
+                            />
+                          )}
+                        </div>
                       </td>
                     </tr>
                   )
