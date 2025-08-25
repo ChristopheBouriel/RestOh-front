@@ -17,7 +17,9 @@ import useAuthStore from './store/authStore'
 import useCartStore from './store/cartStore'
 import useMenuStore from './store/menuStore'
 import useOrdersStore from './store/ordersStore'
+import useReservationsStore from './store/reservationsStore'
 import OrdersManagement from './pages/admin/OrdersManagement'
+import ReservationsManagement from './pages/admin/ReservationsManagement'
 import Checkout from './pages/checkout/Checkout'
 import { ROUTES } from './constants'
 
@@ -26,12 +28,14 @@ function App() {
   const { setCurrentUser } = useCartStore()
   const { initializeMenu } = useMenuStore()
   const { initializeOrders } = useOrdersStore()
+  const { initializeReservations } = useReservationsStore()
 
   useEffect(() => {
-    // Initialiser le menu et les commandes au démarrage
+    // Initialiser le menu, les commandes et les réservations au démarrage
     initializeMenu()
     initializeOrders()
-  }, [initializeMenu, initializeOrders])
+    initializeReservations()
+  }, [initializeMenu, initializeOrders, initializeReservations])
 
   useEffect(() => {
     // Connecter l'utilisateur au panier
@@ -82,6 +86,7 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="menu" element={<MenuManagement />} />
           <Route path="orders" element={<OrdersManagement />} />
+          <Route path="reservations" element={<ReservationsManagement />} />
         </Route>
         
         {/* Routes sans layout (auth) */}
