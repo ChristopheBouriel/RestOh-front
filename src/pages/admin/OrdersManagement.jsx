@@ -79,7 +79,7 @@ const OrdersManagement = () => {
       </div>
 
       {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
@@ -123,22 +123,24 @@ const OrdersManagement = () => {
 
       {/* Filtres */}
       <div className="bg-white p-4 rounded-lg shadow-sm border">
-        <div className="flex items-center space-x-4">
-          <Filter className="h-5 w-5 text-gray-400" />
-          <SimpleSelect
-            value={filterStatus}
-            onChange={(newStatus) => setFilterStatus(newStatus)}
-            className="w-[180px]"
-            options={[
-              { value: 'all', label: 'Toutes les commandes' },
-              { value: 'pending', label: 'En attente' },
-              { value: 'confirmed', label: 'Confirmées' },
-              { value: 'preparing', label: 'Préparation' },
-              { value: 'ready', label: 'Prêtes' },
-              { value: 'delivered', label: 'Livrées' },
-              { value: 'cancelled', label: 'Annulées' }
-            ]}
-          />
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+          <div className="flex items-center space-x-3">
+            <Filter className="h-5 w-5 text-gray-400" />
+            <SimpleSelect
+              value={filterStatus}
+              onChange={(newStatus) => setFilterStatus(newStatus)}
+              className="w-[180px] sm:w-[200px]"
+              options={[
+                { value: 'all', label: 'Toutes les commandes' },
+                { value: 'pending', label: 'En attente' },
+                { value: 'confirmed', label: 'Confirmées' },
+                { value: 'preparing', label: 'Préparation' },
+                { value: 'ready', label: 'Prêtes' },
+                { value: 'delivered', label: 'Livrées' },
+                { value: 'cancelled', label: 'Annulées' }
+              ]}
+            />
+          </div>
           <span className="text-sm text-gray-500">
             {filteredOrders.length} commande(s) affichée(s)
           </span>
@@ -159,103 +161,177 @@ const OrdersManagement = () => {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Commande
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Client
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Articles
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Statut
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredOrders.map((order) => {
-                  const StatusIcon = statusConfig[order.status]?.icon || Package
-                  return (
-                    <tr key={order.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {order.id}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{order.userName}</div>
-                          <div className="text-sm text-gray-500">{order.userEmail}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">
-                          {order.items.length} article(s)
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {order.items.slice(0, 2).map(item => item.name).join(', ')}
-                          {order.items.length > 2 && '...'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {formatPrice(order.totalAmount)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig[order.status]?.color}`}>
+          <>
+            {/* Vue Desktop - Tableau */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Commande
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Client
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Articles
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Total
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Statut
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredOrders.map((order) => {
+                    const StatusIcon = statusConfig[order.status]?.icon || Package
+                    return (
+                      <tr key={order.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {order.id}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{order.userName}</div>
+                            <div className="text-sm text-gray-500">{order.userEmail}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900">
+                            {order.items.length} article(s)
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {order.items.slice(0, 2).map(item => item.name).join(', ')}
+                            {order.items.length > 2 && '...'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {formatPrice(order.totalAmount)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig[order.status]?.color}`}>
+                            <StatusIcon className="h-3 w-3 mr-1" />
+                            {statusConfig[order.status]?.label}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(order.createdAt)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <div className="flex items-center space-x-3">
+                            <button
+                              onClick={() => setSelectedOrder(order)}
+                              className="text-primary-600 hover:text-primary-900"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            {order.status !== 'delivered' && order.status !== 'cancelled' && (
+                              <SimpleSelect
+                                value={order.status}
+                                onChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                                className="w-[110px]"
+                                options={[
+                                  { value: 'pending', label: 'En attente' },
+                                  { value: 'confirmed', label: 'Confirmée' },
+                                  { value: 'preparing', label: 'Préparation' },
+                                  { value: 'ready', label: 'Prête' },
+                                  { value: 'delivered', label: 'Livrée' },
+                                  { value: 'cancelled', label: 'Annulée' }
+                                ]}
+                              />
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Vue Mobile/Tablet - Cards */}
+            <div className="lg:hidden divide-y divide-gray-200">
+              {filteredOrders.map((order) => {
+                const StatusIcon = statusConfig[order.status]?.icon || Package
+                return (
+                  <div key={order.id} className="p-4 hover:bg-gray-50">
+                    {/* Header de la card */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-medium text-gray-900">#{order.id}</span>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusConfig[order.status]?.color}`}>
                           <StatusIcon className="h-3 w-3 mr-1" />
                           {statusConfig[order.status]?.label}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(order.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <div className="flex items-center space-x-3">
-                          <button
-                            onClick={() => setSelectedOrder(order)}
-                            className="text-primary-600 hover:text-primary-900"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </button>
-                          {order.status !== 'delivered' && order.status !== 'cancelled' && (
-                            <SimpleSelect
-                              value={order.status}
-                              onChange={(newStatus) => handleStatusChange(order.id, newStatus)}
-                              className="w-[110px]"
-                              options={[
-                                { value: 'pending', label: 'En attente' },
-                                { value: 'confirmed', label: 'Confirmée' },
-                                { value: 'preparing', label: 'Préparation' },
-                                { value: 'ready', label: 'Prête' },
-                                { value: 'delivered', label: 'Livrée' },
-                                { value: 'cancelled', label: 'Annulée' }
-                              ]}
-                            />
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                      <span className="text-sm font-bold text-primary-600">
+                        {formatPrice(order.totalAmount)}
+                      </span>
+                    </div>
+
+                    {/* Informations client */}
+                    <div className="mb-3">
+                      <p className="text-sm font-medium text-gray-900">{order.userName}</p>
+                      <p className="text-xs text-gray-500">{order.userEmail}</p>
+                    </div>
+
+                    {/* Articles et date */}
+                    <div className="flex justify-between items-center mb-3 text-xs text-gray-500">
+                      <span>{order.items.length} article(s)</span>
+                      <span>{formatDate(order.createdAt)}</span>
+                    </div>
+
+                    {/* Articles preview */}
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-600">
+                        {order.items.slice(0, 2).map(item => item.name).join(', ')}
+                        {order.items.length > 2 && '...'}
+                      </p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={() => setSelectedOrder(order)}
+                        className="flex items-center space-x-2 text-primary-600 hover:text-primary-900 text-sm"
+                      >
+                        <Eye className="h-4 w-4" />
+                        <span>Détails</span>
+                      </button>
+                      
+                      {order.status !== 'delivered' && order.status !== 'cancelled' && (
+                        <SimpleSelect
+                          value={order.status}
+                          onChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                          className="w-[140px]"
+                          options={[
+                            { value: 'pending', label: 'En attente' },
+                            { value: 'confirmed', label: 'Confirmée' },
+                            { value: 'preparing', label: 'Préparation' },
+                            { value: 'ready', label: 'Prête' },
+                            { value: 'delivered', label: 'Livrée' },
+                            { value: 'cancelled', label: 'Annulée' }
+                          ]}
+                        />
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </>
         )}
       </div>
 
