@@ -17,6 +17,11 @@ const useReservationsStore = create(
         if (stored) {
           set({ reservations: JSON.parse(stored) })
         } else {
+          // Calculer la date de demain
+          const tomorrow = new Date()
+          tomorrow.setDate(tomorrow.getDate() + 1)
+          const tomorrowStr = tomorrow.toISOString().split('T')[0]
+          
           // Données initiales pour la démo
           const initialReservations = [
             {
@@ -25,7 +30,7 @@ const useReservationsStore = create(
               userEmail: 'client@example.com',
               userName: 'Jean Dupont',
               phone: '06 12 34 56 78',
-              date: '2024-01-25',
+              date: tomorrowStr,
               time: '19:30',
               guests: 4,
               status: 'confirmed', // pending, confirmed, seated, completed, cancelled
@@ -78,7 +83,22 @@ const useReservationsStore = create(
               specialRequests: '',
               createdAt: '2024-01-22T09:20:00Z',
               updatedAt: '2024-01-23T14:10:00Z'
-            }
+            },
+            {
+              id: 'reservation-000',
+              userId: 'client',
+              userEmail: 'client@example.com',
+              userName: 'Jean Dupont',
+              phone: '06 12 34 56 78',
+              date: '2024-01-24',
+              time: '19:30',
+              guests: 4,
+              status: 'completed',
+              tableNumber: 1,
+              specialRequests: 'Table au fond de la salle',
+              createdAt: '2024-01-20T14:30:00Z',
+              updatedAt: '2024-01-20T14:30:00Z'
+            },
           ]
           
           set({ reservations: initialReservations })

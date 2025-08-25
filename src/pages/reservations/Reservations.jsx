@@ -80,8 +80,8 @@ const Reservations = () => {
     setEditingId(reservation.id)
     setSelectedDate(reservation.date)
     setSelectedTime(reservation.time)
-    setPartySize(reservation.people)
-    setSpecialRequests(reservation.requests || '')
+    setPartySize(reservation.guests)
+    setSpecialRequests(reservation.specialRequests || '')
     toast.info('Modification activée - utilisez le formulaire ci-dessus')
   }
 
@@ -281,11 +281,11 @@ const Reservations = () => {
                             <span className="text-gray-500">à {reservation.time}</span>
                           </div>
                           <p className="text-sm text-gray-600">
-                            👥 {reservation.people} personne{reservation.people > 1 ? 's' : ''}
+                            <span className='mr-2'>👥</span> {reservation.guests} personne{reservation.guests > 1 ? 's' : ''}
                           </p>
-                          {reservation.requests && (
+                          {reservation.specialRequests && (
                             <p className="text-sm text-gray-600 mt-1">
-                              📝 {reservation.requests}
+                              📝 {reservation.specialRequests}
                             </p>
                           )}
                         </div>

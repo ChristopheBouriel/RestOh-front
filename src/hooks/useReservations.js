@@ -1,42 +1,88 @@
 import { toast } from 'react-hot-toast'
 import useReservationsStore from '../store/reservationsStore'
+import { useAuth } from './useAuth'
 
 export const useReservations = () => {
+  const { user } = useAuth()
   const {
-    reservations,
-    addReservation,
-    updateReservation,
-    deleteReservation,
-    getReservation,
-    getReservationsByStatus,
+    reservations: allReservations,
+    createReservation,
+    updateReservationStatus,
+    getReservationsByUser,
     getUpcomingReservations
   } = useReservationsStore()
 
-  const handleCreateReservation = (reservationData) => {
+  // Filtrer les réservations pour l'utilisateur connecté uniquement
+  const userReservations = user ? getReservationsByUser(user.id) : []
+
+  const handleCreateReservation = async (reservationData) => {
+    if (!user) {
+      toast.error('Vous devez être connecté pour créer une réservation')
+      throw new Error('User not authenticated')
+    }
+
     try {
-      const newReservation = addReservation(reservationData)
-      toast.success('Réservation créée avec succès !')
-      return newReservation
+      const fullReservationData = {
+        ...reservationData,
+        userId: user.id,
+        userEmail: user.email,
+        userName: user.name,
+        phone: user.phone || '',
+        guests: reservationData.people, // Convertir 'people' en 'guests'
+        specialRequests: reservationData.requests || ''
+      }
+      
+      const result = await createReservation(fullReservationData)
+      if (result.success) {
+        toast.success('Réservation créée avec succès !')
+        return result
+      } else {
+        throw new Error(result.error)
+      }
     } catch (error) {
       toast.error('Erreur lors de la création de la réservation')
       throw error
     }
   }
 
-  const handleUpdateReservation = (reservationId, reservationData) => {
+  const handleUpdateReservation = async (reservationId, reservationData) => {
+    if (!user) {
+      toast.error('Vous devez être connecté pour modifier une réservation')
+      throw new Error('User not authenticated')
+    }
+
     try {
-      updateReservation(reservationId, reservationData)
-      toast.success('Réservation modifiée avec succès !')
+      const fullReservationData = {
+        ...reservationData,
+        guests: reservationData.people,
+        specialRequests: reservationData.requests || ''
+      }
+      
+      const result = await updateReservationStatus(reservationId, 'pending') // Remet en attente pour re-validation
+      if (result.success) {
+        toast.success('Réservation modifiée avec succès !')
+      } else {
+        throw new Error(result.error)
+      }
     } catch (error) {
       toast.error('Erreur lors de la modification de la réservation')
       throw error
     }
   }
 
-  const handleCancelReservation = (reservationId) => {
+  const handleCancelReservation = async (reservationId) => {
+    if (!user) {
+      toast.error('Vous devez être connecté pour annuler une réservation')
+      throw new Error('User not authenticated')
+    }
+
     try {
-      deleteReservation(reservationId)
-      toast.success('Réservation annulée')
+      const result = await updateReservationStatus(reservationId, 'cancelled')
+      if (result.success) {
+        toast.success('Réservation annulée')
+      } else {
+        throw new Error(result.error)
+      }
     } catch (error) {
       toast.error('Erreur lors de l\'annulation de la réservation')
       throw error
@@ -89,9 +135,14 @@ export const useReservations = () => {
   }
 
   return {
-    // État
-    reservations,
-    upcomingReservations: getUpcomingReservations(),
+    // État - seulement les réservations de l'utilisateur connecté
+    reservations: userReservations,
+    upcomingReservations: userReservations.filter(r => {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const reservationDate = new Date(r.date)
+      return reservationDate >= today && r.status !== 'cancelled'
+    }).sort((a, b) => new Date(a.date) - new Date(b.date)),
     
     // Actions avec gestion d'erreurs
     createReservation: handleCreateReservation,
@@ -99,15 +150,13 @@ export const useReservations = () => {
     cancelReservation: handleConfirmCancellation,
     
     // Utilitaires
-    getReservation,
-    getReservationsByStatus,
     formatDate,
     formatDateTime,
     validateReservationData,
     
-    // Statistiques
-    totalReservations: reservations.length,
-    confirmedReservations: getReservationsByStatus('confirmed').length,
-    pendingReservations: getReservationsByStatus('pending').length
+    // Statistiques pour l'utilisateur
+    totalReservations: userReservations.length,
+    confirmedReservations: userReservations.filter(r => r.status === 'confirmed').length,
+    pendingReservations: userReservations.filter(r => r.status === 'pending').length
   }
 }
