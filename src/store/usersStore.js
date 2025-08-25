@@ -11,111 +11,122 @@ const useUsersStore = create(
       // Actions
       setLoading: (loading) => set({ isLoading: loading }),
 
-      // Initialiser avec des données de test
+      // Initialiser en lisant depuis registered-users et en enrichissant avec les données admin
       initializeUsers: () => {
-        const stored = localStorage.getItem('admin-users')
-        if (stored) {
-          set({ users: JSON.parse(stored) })
-        } else {
-          // Calculer des dates récentes
-          const today = new Date()
-          const oneWeekAgo = new Date(today)
-          oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
-          const twoWeeksAgo = new Date(today)
-          twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
-          const oneMonthAgo = new Date(today)
-          oneMonthAgo.setDate(oneMonthAgo.getDate() - 30)
-          
-          // Données initiales pour la démo
-          const initialUsers = [
-            {
-              id: 'admin',
-              email: 'admin@restoh.fr',
-              name: 'Administrateur',
-              role: 'admin',
-              phone: '01 23 45 67 89',
-              address: '456 Avenue de l\'Administration, 75008 Paris',
-              isActive: true,
-              emailVerified: true,
-              createdAt: oneMonthAgo.toISOString(),
-              lastLoginAt: today.toISOString(),
-              totalOrders: 0,
-              totalSpent: 0,
-              totalReservations: 0
-            },
-            {
-              id: 'client',
-              email: 'client@example.com',
-              name: 'Jean Dupont',
-              role: 'user',
-              phone: '06 12 34 56 78',
-              address: '123 Rue de la République, 75001 Paris',
-              isActive: true,
-              emailVerified: true,
-              createdAt: oneMonthAgo.toISOString(),
-              lastLoginAt: today.toISOString(),
-              totalOrders: 4,
-              totalSpent: 105.80,
-              totalReservations: 2
-            },
-            {
-              id: 'user-001',
-              email: 'marie.martin@email.fr',
-              name: 'Marie Martin',
-              role: 'user',
-              phone: '07 98 76 54 32',
-              address: '789 Boulevard Saint-Germain, 75007 Paris',
-              isActive: true,
-              emailVerified: true,
-              createdAt: twoWeeksAgo.toISOString(),
-              lastLoginAt: oneWeekAgo.toISOString(),
-              totalOrders: 2,
-              totalSpent: 45.30,
-              totalReservations: 1
-            },
-            {
-              id: 'user-002',
-              email: 'paul.bernard@gmail.com',
-              name: 'Paul Bernard',
-              role: 'user',
-              phone: '06 55 44 33 22',
-              address: '321 Rue de Rivoli, 75004 Paris',
-              isActive: true,
-              emailVerified: false,
-              createdAt: oneWeekAgo.toISOString(),
-              lastLoginAt: null,
-              totalOrders: 0,
-              totalSpent: 0,
-              totalReservations: 1
-            },
-            {
-              id: 'user-003',
-              email: 'sophie.durand@yahoo.fr',
-              name: 'Sophie Durand',
-              role: 'user',
-              phone: '07 11 22 33 44',
-              address: '654 Avenue des Champs-Élysées, 75008 Paris',
-              isActive: false,
-              emailVerified: true,
-              createdAt: oneMonthAgo.toISOString(),
-              lastLoginAt: twoWeeksAgo.toISOString(),
-              totalOrders: 1,
-              totalSpent: 28.50,
-              totalReservations: 0
-            }
-          ]
-          
-          set({ users: initialUsers })
-          localStorage.setItem('admin-users', JSON.stringify(initialUsers))
+        // Nettoyer l'ancienne clé admin-users si elle existe
+        if (localStorage.getItem('admin-users')) {
+          localStorage.removeItem('admin-users')
         }
+        
+        const registeredUsers = JSON.parse(localStorage.getItem('registered-users') || '[]')
+        const orders = JSON.parse(localStorage.getItem('admin-orders-v2') || '[]')
+        const reservations = JSON.parse(localStorage.getItem('admin-reservations') || '[]')
+        
+        // Calculer des dates de base pour les comptes par défaut
+        const today = new Date()
+        const oneMonthAgo = new Date(today)
+        oneMonthAgo.setDate(oneMonthAgo.getDate() - 30)
+        
+        // Comptes par défaut (admin et client test)
+        const defaultUsers = [
+          {
+            id: 'admin',
+            email: 'admin@restoh.fr',
+            name: 'Administrateur',
+            role: 'admin',
+            phone: '01 23 45 67 89',
+            address: '456 Avenue de l\'Administration, 75008 Paris',
+            isActive: true,
+            emailVerified: true,
+            createdAt: oneMonthAgo.toISOString(),
+            lastLoginAt: today.toISOString(),
+            password: 'hashed' // Placeholder, vraie valeur dans authStore
+          },
+          {
+            id: 'client',
+            email: 'client@example.com',
+            name: 'Jean Dupont',
+            role: 'user',
+            phone: '06 12 34 56 78',
+            address: '123 Rue de la République, 75001 Paris',
+            isActive: true,
+            emailVerified: true,
+            createdAt: oneMonthAgo.toISOString(),
+            lastLoginAt: today.toISOString(),
+            password: 'hashed' // Placeholder, vraie valeur dans authStore
+          }
+        ]
+
+        // Fusionner les utilisateurs par défaut avec les utilisateurs enregistrés
+        const allBaseUsers = [...defaultUsers]
+        
+        // Ajouter les utilisateurs enregistrés qui ne sont pas déjà dans les defaults
+        registeredUsers.forEach(regUser => {
+          if (!allBaseUsers.find(u => u.email === regUser.email)) {
+            allBaseUsers.push({
+              ...regUser,
+              phone: regUser.phone || '',
+              address: regUser.address || '',
+              isActive: regUser.isActive !== undefined ? regUser.isActive : true,
+              emailVerified: regUser.emailVerified !== undefined ? regUser.emailVerified : false,
+              lastLoginAt: regUser.lastLoginAt || null,
+              createdAt: regUser.createdAt || new Date().toISOString()
+            })
+          }
+        })
+
+        // Enrichir chaque utilisateur avec ses statistiques d'activité
+        const enrichedUsers = allBaseUsers.map(user => {
+          // Calculer les commandes de l'utilisateur
+          const userOrders = orders.filter(order => order.userId === user.id)
+          const deliveredOrders = userOrders.filter(order => order.status === 'delivered')
+          const totalSpent = deliveredOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0)
+
+          // Calculer les réservations de l'utilisateur
+          const userReservations = reservations.filter(reservation => reservation.userId === user.id)
+
+          return {
+            ...user,
+            totalOrders: userOrders.length,
+            totalSpent: totalSpent,
+            totalReservations: userReservations.length
+          }
+        })
+
+        set({ users: enrichedUsers })
       },
 
-      // Créer un nouvel utilisateur (appelé depuis l'inscription)
+      // Sauvegarder les modifications dans registered-users (et garder les comptes par défaut séparés)
+      saveUserChangesToStorage: (users) => {
+        const registeredUsers = JSON.parse(localStorage.getItem('registered-users') || '[]')
+        const defaultUserIds = ['admin', 'client']
+        
+        // Séparer les utilisateurs par défaut des utilisateurs enregistrés
+        const updatedRegisteredUsers = users
+          .filter(user => !defaultUserIds.includes(user.id))
+          .map(user => ({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            password: user.password,
+            role: user.role,
+            phone: user.phone,
+            address: user.address,
+            isActive: user.isActive,
+            emailVerified: user.emailVerified,
+            lastLoginAt: user.lastLoginAt,
+            createdAt: user.createdAt
+          }))
+
+        // Mettre à jour registered-users avec les nouvelles données
+        localStorage.setItem('registered-users', JSON.stringify(updatedRegisteredUsers))
+      },
+
+      // Créer un nouvel utilisateur (appelé depuis l'inscription - cette méthode est maintenant principalement pour l'admin)
       createUser: async (userData) => {
         set({ isLoading: true })
         
         try {
-          // Simulation d'appel API
           await new Promise(resolve => setTimeout(resolve, 500))
           
           const newUser = {
@@ -133,7 +144,7 @@ const useUsersStore = create(
           
           const updatedUsers = [newUser, ...get().users]
           set({ users: updatedUsers, isLoading: false })
-          localStorage.setItem('admin-users', JSON.stringify(updatedUsers))
+          get().saveUserChangesToStorage(updatedUsers)
           
           return { success: true, userId: newUser.id }
         } catch (error) {
@@ -156,7 +167,7 @@ const useUsersStore = create(
           )
           
           set({ users: updatedUsers, isLoading: false })
-          localStorage.setItem('admin-users', JSON.stringify(updatedUsers))
+          get().saveUserChangesToStorage(updatedUsers)
           
           return { success: true }
         } catch (error) {
@@ -179,7 +190,7 @@ const useUsersStore = create(
           )
           
           set({ users: updatedUsers, isLoading: false })
-          localStorage.setItem('admin-users', JSON.stringify(updatedUsers))
+          get().saveUserChangesToStorage(updatedUsers)
           
           return { success: true }
         } catch (error) {
@@ -202,7 +213,7 @@ const useUsersStore = create(
           )
           
           set({ users: updatedUsers, isLoading: false })
-          localStorage.setItem('admin-users', JSON.stringify(updatedUsers))
+          get().saveUserChangesToStorage(updatedUsers)
           
           return { success: true }
         } catch (error) {
@@ -211,7 +222,7 @@ const useUsersStore = create(
         }
       },
 
-      // Mettre à jour la dernière connexion
+      // Mettre à jour la dernière connexion (utilisé par authStore)
       updateLastLogin: (userId) => {
         const updatedUsers = get().users.map(user =>
           user.id === userId 
@@ -220,19 +231,12 @@ const useUsersStore = create(
         )
         
         set({ users: updatedUsers })
-        localStorage.setItem('admin-users', JSON.stringify(updatedUsers))
+        get().saveUserChangesToStorage(updatedUsers)
       },
 
-      // Mettre à jour les statistiques d'activité
-      updateUserStats: (userId, stats) => {
-        const updatedUsers = get().users.map(user =>
-          user.id === userId 
-            ? { ...user, ...stats }
-            : user
-        )
-        
-        set({ users: updatedUsers })
-        localStorage.setItem('admin-users', JSON.stringify(updatedUsers))
+      // Rafraîchir les statistiques dynamiquement
+      refreshUserStats: () => {
+        get().initializeUsers()
       },
 
       // Getters
@@ -302,9 +306,7 @@ const useUsersStore = create(
     }),
     {
       name: 'users-storage',
-      partialize: (state) => ({ 
-        users: state.users 
-      }),
+      partialize: () => ({}), // Ne pas persister les users car ils sont recalculés dynamiquement
     }
   )
 )
