@@ -17,6 +17,15 @@ const useOrdersStore = create(
         if (stored) {
           set({ orders: JSON.parse(stored) })
         } else {
+          // Calculer les dates récentes
+          const today = new Date()
+          const yesterday = new Date(today)
+          yesterday.setDate(yesterday.getDate() - 1)
+          const twoDaysAgo = new Date(today)
+          twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
+          const threeDaysAgo = new Date(today)
+          threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
+          
           // Données initiales pour la démo
           const initialOrders = [
             {
@@ -24,23 +33,27 @@ const useOrdersStore = create(
               userId: 'client',
               userEmail: 'client@example.com',
               userName: 'Client',
+              deliveryAddress: '123 Rue de la République, 75001 Paris',
+              phone: '06 12 34 56 78',
               items: [
                 { id: 1, name: 'Pizza Margherita', price: 15.90, quantity: 2, image: 'pizza-margherita.jpg' },
                 { id: 2, name: 'Salade César', price: 12.50, quantity: 1, image: 'salade-cesar.jpg' }
               ],
               totalAmount: 44.30,
-              status: 'pending', // pending, confirmed, preparing, ready, delivered, cancelled
+              status: 'preparing', // pending, confirmed, preparing, ready, delivered, cancelled
               paymentMethod: 'card',
-              isPaid: false,
-              createdAt: '2024-01-20T14:30:00Z',
-              updatedAt: '2024-01-20T14:30:00Z',
-              notes: 'Commande test pour la démo'
+              isPaid: true,
+              createdAt: today.toISOString(),
+              updatedAt: today.toISOString(),
+              notes: 'Commande en cours de préparation'
             },
             {
               id: 'order-002',
               userId: 'client',
               userEmail: 'client@example.com', 
               userName: 'Client',
+              deliveryAddress: '123 Rue de la République, 75001 Paris',
+              phone: '06 12 34 56 78',
               items: [
                 { id: 3, name: 'Burger Gourmand', price: 18.00, quantity: 1, image: 'burger-gourmand.jpg' }
               ],
@@ -48,9 +61,46 @@ const useOrdersStore = create(
               status: 'delivered',
               paymentMethod: 'cash',
               isPaid: true,
-              createdAt: '2024-01-19T12:15:00Z',
-              updatedAt: '2024-01-19T13:45:00Z',
+              createdAt: yesterday.toISOString(),
+              updatedAt: yesterday.toISOString(),
               notes: ''
+            },
+            {
+              id: 'order-003',
+              userId: 'client',
+              userEmail: 'client@example.com', 
+              userName: 'Client',
+              deliveryAddress: '123 Rue de la République, 75001 Paris',
+              phone: '06 12 34 56 78',
+              items: [
+                { id: 4, name: 'Pasta Carbonara', price: 16.50, quantity: 1, image: 'pasta-carbonara.jpg' },
+                { id: 5, name: 'Tiramisu', price: 8.00, quantity: 1, image: 'tiramisu.jpg' }
+              ],
+              totalAmount: 24.50,
+              status: 'delivered',
+              paymentMethod: 'card',
+              isPaid: true,
+              createdAt: twoDaysAgo.toISOString(),
+              updatedAt: twoDaysAgo.toISOString(),
+              notes: 'Commande livrée avec succès'
+            },
+            {
+              id: 'order-004',
+              userId: 'client',
+              userEmail: 'client@example.com', 
+              userName: 'Client',
+              deliveryAddress: '123 Rue de la République, 75001 Paris',
+              phone: '06 12 34 56 78',
+              items: [
+                { id: 6, name: 'Risotto aux champignons', price: 19.00, quantity: 1, image: 'risotto.jpg' }
+              ],
+              totalAmount: 19.00,
+              status: 'cancelled',
+              paymentMethod: 'card',
+              isPaid: false,
+              createdAt: threeDaysAgo.toISOString(),
+              updatedAt: threeDaysAgo.toISOString(),
+              notes: 'Commande annulée par le client'
             }
           ]
           

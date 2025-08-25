@@ -1,69 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Clock, Package, CheckCircle, XCircle, Eye, Star, MapPin } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { useOrders } from '../../hooks/useOrders'
+import useOrdersStore from '../../store/ordersStore'
 
 const Orders = () => {
   const [filter, setFilter] = useState('all')
   const [showDetails, setShowDetails] = useState(null)
+  
+  const { initializeOrders } = useOrdersStore()
+  const { orders, cancelOrder, canCancelOrder, formatPrice, formatDate } = useOrders()
 
-  // Données de démonstration avec plus de détails
-  const [orders, setOrders] = useState([
-    {
-      id: '#12345',
-      date: '2024-01-15',
-      time: '14:30',
-      status: 'delivered',
-      items: [
-        { name: 'Pizza Margherita', quantity: 1, price: 15.90 },
-        { name: 'Salade César', quantity: 1, price: 12.50 },
-        { name: 'Coca-Cola', quantity: 2, price: 4.00 }
-      ],
-      total: 39.40,
-      rating: null,
-      address: '123 Rue de la République, 75001 Paris',
-      canCancel: false
-    },
-    {
-      id: '#12346',
-      date: '2024-01-20',
-      time: '18:45',
-      status: 'preparing',
-      items: [
-        { name: 'Burger Gourmand', quantity: 1, price: 18.00 },
-        { name: 'Frites Maison', quantity: 1, price: 5.50 },
-        { name: 'Tiramisu', quantity: 1, price: 7.50 }
-      ],
-      total: 28.50,
-      rating: null,
-      address: '123 Rue de la République, 75001 Paris',
-      canCancel: true
-    },
-    {
-      id: '#12344',
-      date: '2024-01-10',
-      time: '12:15',
-      status: 'cancelled',
-      items: [
-        { name: 'Pasta Carbonara', quantity: 1, price: 16.00 },
-        { name: 'Dessert Chocolat', quantity: 1, price: 9.00 }
-      ],
-      total: 25.00,
-      rating: null,
-      address: '123 Rue de la République, 75001 Paris',
-      canCancel: false
-    }
-  ])
-
-  const handleCancelOrder = (orderId) => {
-    if (window.confirm('Êtes-vous sûr de vouloir annuler cette commande ?')) {
-      setOrders(orders.map(order => 
-        order.id === orderId 
-          ? { ...order, status: 'cancelled', canCancel: false }
-          : order
-      ))
-      toast.success('Commande annulée')
-    }
-  }
+  useEffect(() => {
+    initializeOrders()
+  }, [initializeOrders])
 
   const handleLeaveReview = () => {
     toast.success('Fonctionnalité d\'avis en cours de développement')
@@ -85,6 +35,24 @@ const Orders = () => {
         return { 
           label: 'En préparation', 
           color: 'text-yellow-600 bg-yellow-50',
+          icon: Clock
+        }
+      case 'ready':
+        return { 
+          label: 'Prête', 
+          color: 'text-blue-600 bg-blue-50',
+          icon: Package
+        }
+      case 'confirmed':
+        return { 
+          label: 'Confirmée', 
+          color: 'text-indigo-600 bg-indigo-50',
+          icon: CheckCircle
+        }
+      case 'pending':
+        return { 
+          label: 'En attente', 
+          color: 'text-orange-600 bg-orange-50',
           icon: Clock
         }
       case 'cancelled':
@@ -116,7 +84,10 @@ const Orders = () => {
           <div className="flex flex-wrap gap-2">
             {[
               { key: 'all', label: 'Toutes les commandes' },
+              { key: 'pending', label: 'En attente' },
+              { key: 'confirmed', label: 'Confirmées' },
               { key: 'preparing', label: 'En préparation' },
+              { key: 'ready', label: 'Prêtes' },
               { key: 'delivered', label: 'Livrées' },
               { key: 'cancelled', label: 'Annulées' }
             ].map(({ key, label }) => (
@@ -148,7 +119,7 @@ const Orders = () => {
                     <div className="flex-1">
                       <div className="flex items-center space-x-4 mb-2">
                         <h3 className="text-lg font-semibold text-gray-900">
-                          Commande {order.id}
+                          Commande #{order.id}
                         </h3>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color}`}>
                           <StatusIcon className="w-3 h-3 mr-1" />
@@ -157,7 +128,7 @@ const Orders = () => {
                       </div>
                       
                       <p className="text-sm text-gray-600 mb-2">
-                        {new Date(order.date).toLocaleDateString('fr-FR')} à {order.time}
+                        {formatDate(order.createdAt)}
                       </p>
                       
                       <p className="text-sm text-gray-700 mb-2">
@@ -167,7 +138,7 @@ const Orders = () => {
                       </p>
                       
                       <p className="text-lg font-bold text-primary-600">
-                        {order.total.toFixed(2)}€
+                        {formatPrice(order.totalAmount)}
                       </p>
                     </div>
 
@@ -180,7 +151,7 @@ const Orders = () => {
                         <span>{showDetails === order.id ? 'Masquer' : 'Voir détails'}</span>
                       </button>
                       
-                      {order.status === 'delivered' && !order.rating && (
+                      {order.status === 'delivered' && (
                         <button 
                           onClick={handleLeaveReview}
                           className="flex items-center justify-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
@@ -190,16 +161,16 @@ const Orders = () => {
                         </button>
                       )}
                       
-                      {order.status === 'preparing' && (
+                      {['preparing', 'ready'].includes(order.status) && (
                         <button className="flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
                           <MapPin className="w-4 h-4" />
                           <span>Suivre</span>
                         </button>
                       )}
 
-                      {order.canCancel && (
+                      {canCancelOrder(order) && (
                         <button 
-                          onClick={() => handleCancelOrder(order.id)}
+                          onClick={() => cancelOrder(order.id)}
                           className="flex items-center justify-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
                         >
                           <XCircle className="w-4 h-4" />
@@ -219,21 +190,34 @@ const Orders = () => {
                             {order.items.map((item, idx) => (
                               <div key={idx} className="flex justify-between text-sm">
                                 <span>{item.name} x{item.quantity}</span>
-                                <span>{(item.price * item.quantity).toFixed(2)}€</span>
+                                <span>{formatPrice(item.price * item.quantity)}</span>
                               </div>
                             ))}
                             <div className="border-t pt-1 mt-2">
                               <div className="flex justify-between font-semibold">
                                 <span>Total</span>
-                                <span>{order.total.toFixed(2)}€</span>
+                                <span>{formatPrice(order.totalAmount)}</span>
                               </div>
                             </div>
                           </div>
                         </div>
                         
                         <div>
-                          <h4 className="font-semibold text-gray-900 mb-2">Adresse de livraison</h4>
-                          <p className="text-sm text-gray-600">{order.address}</p>
+                          <h4 className="font-semibold text-gray-900 mb-2">Informations de livraison</h4>
+                          <div className="text-sm text-gray-600 space-y-1">
+                            {order.deliveryAddress && (
+                              <p><strong>Adresse:</strong> {order.deliveryAddress}</p>
+                            )}
+                            {order.phone && (
+                              <p><strong>Téléphone:</strong> {order.phone}</p>
+                            )}
+                            {order.paymentMethod && (
+                              <p><strong>Paiement:</strong> {order.paymentMethod === 'card' ? 'Carte bancaire' : 'Espèces'}</p>
+                            )}
+                            {order.notes && (
+                              <p><strong>Notes:</strong> {order.notes}</p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
