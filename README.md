@@ -59,6 +59,14 @@ Une application complète de gestion de restaurant développée avec React, Vite
 - **Historique des connexions** et données d'activité
 - **Statistiques par utilisateur** : commandes, dépenses, réservations
 
+#### 📧 **Gestion des Messages/Contacts**
+- **Réception automatique** des messages du formulaire de contact
+- **Système de statuts** : Nouveau, Lu, Répondu
+- **Badge de notification** avec compteur de nouveaux messages
+- **Interface de gestion** avec filtres et statistiques
+- **Actions disponibles** : marquer comme lu/répondu, supprimer
+- **Modal de détail** avec informations complètes du contact
+
 ### 🔒 **Sécurité & Conformité RGPD**
 - **Suppression de compte sécurisée** avec double confirmation
 - **Anonymisation automatique** des données lors de la suppression
@@ -110,7 +118,8 @@ src/
 │   ├── menuStore.js     # Menu
 │   ├── ordersStore.js   # Commandes
 │   ├── reservationsStore.js # Réservations
-│   └── usersStore.js    # Utilisateurs
+│   ├── usersStore.js    # Utilisateurs
+│   └── contactsStore.js # Messages/Contacts
 ├── hooks/               # Custom hooks React
 ├── utils/               # Utilitaires et helpers
 └── constants/           # Constantes et configuration
@@ -159,6 +168,7 @@ npm run build
 - **Orders Store** : Système de commandes avec logique métier
 - **Reservations Store** : Planning et gestion des réservations
 - **Users Store** : Base utilisateurs avec statistiques
+- **Contacts Store** : Messages de contact et gestion admin
 
 ### **Sécurité**
 - Routes protégées par rôle
