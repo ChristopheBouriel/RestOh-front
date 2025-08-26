@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { User, Mail, Phone, MapPin, Lock, Save } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
+import DeleteAccountModal from '../../components/profile/DeleteAccountModal'
 
 const Profile = () => {
-  const { user, updateProfile, isLoading } = useAuth()
+  const { user, updateProfile, deleteAccount, isLoading } = useAuth()
   const [activeTab, setActiveTab] = useState('personal')
   const [isEditing, setIsEditing] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
@@ -70,6 +72,13 @@ const Profile = () => {
       newPassword: '',
       confirmPassword: ''
     })
+  }
+
+  const handleDeleteAccount = async (password) => {
+    const success = await deleteAccount(password)
+    if (success) {
+      setShowDeleteModal(false)
+    }
   }
 
   const tabs = [
@@ -362,13 +371,24 @@ const Profile = () => {
                 <p className="text-sm text-red-600 mb-4">
                   Cette action est irréversible et supprimera définitivement votre compte.
                 </p>
-                <button className="text-sm text-red-600 hover:text-red-800 font-medium">
+                <button 
+                  onClick={() => setShowDeleteModal(true)}
+                  className="text-sm text-red-600 hover:text-red-800 font-medium"
+                >
                   Supprimer mon compte
                 </button>
               </div>
             </div>
           )}
         </div>
+
+        {/* Delete Account Modal */}
+        <DeleteAccountModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDeleteAccount}
+          isLoading={isLoading}
+        />
       </div>
     </div>
   )

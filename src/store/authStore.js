@@ -191,7 +191,127 @@ const useAuthStore = create(
           })
           return { success: false, error: error.message }
         }
-      }
+      },
+
+      deleteAccount: async (password) => {
+        set({ isLoading: true, error: null })
+        
+        try {
+          console.log('Delete account request')
+          
+          // Simulation d'appel API
+          await new Promise(resolve => setTimeout(resolve, 1500))
+          
+          const currentUser = get().user
+          if (!currentUser) {
+            throw new Error('Aucun utilisateur connecté')
+          }
+
+          // Vérifier le mot de passe (simulation)
+          const registeredUsers = JSON.parse(localStorage.getItem('registered-users') || '[]')
+          const userToDelete = registeredUsers.find(u => u.email === currentUser.email)
+          
+          if (userToDelete) {
+            // Vérifier le mot de passe hashé
+            const { verifyPassword } = await import('../utils/crypto')
+            const isValidPassword = await verifyPassword(password, userToDelete.password)
+            if (!isValidPassword) {
+              throw new Error('Mot de passe incorrect')
+            }
+          } else if (currentUser.email === 'admin@restoh.fr' || currentUser.email === 'client@example.com') {
+            // Pour les comptes par défaut, on vérifie avec les mots de passe par défaut
+            const { verifyPassword } = await import('../utils/crypto')
+            const defaultPasswords = {
+              'admin@restoh.fr': '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', // admin123
+              'client@example.com': '186474c1f2c2f735a54c2cf82ee8e87f2a5cd30940e280029363fecedfc5328c'  // client123
+            }
+            
+            const expectedHash = defaultPasswords[currentUser.email]
+            if (expectedHash) {
+              const isValidPassword = await verifyPassword(password, expectedHash)
+              if (!isValidPassword) {
+                throw new Error('Mot de passe incorrect')
+              }
+            }
+          }
+
+          // Supprimer les données utilisateur de tous les stores
+          await get().cleanupUserData(currentUser.id)
+          
+          // Déconnecter l'utilisateur
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null
+          })
+          
+          return { success: true }
+        } catch (error) {
+          set({
+            error: error.message || 'Erreur lors de la suppression du compte',
+            isLoading: false
+          })
+          return { success: false, error: error.message }
+        }
+      },
+
+      // Nettoyer toutes les données utilisateur du localStorage
+      cleanupUserData: async (userId) => {
+        try {
+          // 1. Supprimer de registered-users
+          const registeredUsers = JSON.parse(localStorage.getItem('registered-users') || '[]')
+          const filteredUsers = registeredUsers.filter(user => user.id !== userId)
+          localStorage.setItem('registered-users', JSON.stringify(filteredUsers))
+
+          // 2. Anonymiser les commandes (garder pour les stats mais supprimer les données perso)
+          const orders = JSON.parse(localStorage.getItem('admin-orders-v2') || '[]')
+          const anonymizedOrders = orders.map(order => 
+            order.userId === userId 
+              ? {
+                  ...order,
+                  userId: 'deleted-user',
+                  userEmail: 'deleted@account.com',
+                  userName: 'Utilisateur supprimé',
+                  deliveryAddress: 'Adresse supprimée',
+                  phone: 'Téléphone supprimé',
+                  notes: order.notes ? 'Notes supprimées' : ''
+                }
+              : order
+          )
+          localStorage.setItem('admin-orders-v2', JSON.stringify(anonymizedOrders))
+
+          // 3. Anonymiser les réservations
+          const reservations = JSON.parse(localStorage.getItem('admin-reservations') || '[]')
+          const anonymizedReservations = reservations.map(reservation => 
+            reservation.userId === userId 
+              ? {
+                  ...reservation,
+                  userId: 'deleted-user',
+                  userEmail: 'deleted@account.com',
+                  userName: 'Utilisateur supprimé',
+                  phone: 'Téléphone supprimé',
+                  specialRequests: reservation.specialRequests ? 'Demandes supprimées' : ''
+                }
+              : reservation
+          )
+          localStorage.setItem('admin-reservations', JSON.stringify(anonymizedReservations))
+
+          // 4. Nettoyer le panier de l'utilisateur
+          const cartData = JSON.parse(localStorage.getItem('cart-storage') || '{}')
+          if (cartData.state && cartData.state.userCarts && cartData.state.userCarts[userId]) {
+            delete cartData.state.userCarts[userId]
+            localStorage.setItem('cart-storage', JSON.stringify(cartData))
+          }
+
+          console.log('Données utilisateur nettoyées avec succès')
+        } catch (error) {
+          console.error('Erreur lors du nettoyage des données:', error)
+        }
+      },
+
+      clearError: () => set({ error: null })
     }),
     {
       name: 'auth-storage',

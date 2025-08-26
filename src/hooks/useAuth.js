@@ -15,6 +15,7 @@ export const useAuth = () => {
     register,
     logout,
     updateProfile,
+    deleteAccount,
     clearError
   } = useAuthStore()
 
@@ -62,6 +63,19 @@ export const useAuth = () => {
     }
   }
 
+  const handleDeleteAccount = async (password) => {
+    const result = await deleteAccount(password)
+    
+    if (result.success) {
+      toast.success('Compte supprimé avec succès')
+      navigate(ROUTES.HOME)
+      return true
+    } else {
+      toast.error(error || 'Erreur lors de la suppression du compte')
+      return false
+    }
+  }
+
   // Utilitaires
   const isAdmin = user?.role === 'admin'
   const isUser = user?.role === 'user'
@@ -81,6 +95,7 @@ export const useAuth = () => {
     register: handleRegister,
     logout: handleLogout,
     updateProfile: handleUpdateProfile,
+    deleteAccount: handleDeleteAccount,
     clearError
   }
 }
