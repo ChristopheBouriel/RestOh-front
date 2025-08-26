@@ -275,16 +275,16 @@ const ContactsManagement = () => {
                       <StatusIcon className="w-3 h-3 mr-1" />
                       {statusConfig[selectedMessage.status]?.label}
                     </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedMessage(null)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
-                <button
-                  onClick={() => setSelectedMessage(null)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
 
               {/* Informations du contact */}
               <div className="bg-gray-50 p-4 rounded-lg mb-6">

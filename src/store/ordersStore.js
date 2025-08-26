@@ -201,11 +201,22 @@ const useOrdersStore = create(
         try {
           await new Promise(resolve => setTimeout(resolve, 500))
           
-          const updatedOrders = get().orders.map(order =>
-            order.id === orderId 
-              ? { ...order, status: newStatus, updatedAt: new Date().toISOString() }
-              : order
-          )
+          const updatedOrders = get().orders.map(order => {
+            if (order.id === orderId) {
+              const updatedOrder = { ...order, status: newStatus, updatedAt: new Date().toISOString() }
+              
+              // Logique automatique de paiement en espèces
+              if (newStatus === 'delivered' && order.paymentMethod === 'cash' && !order.isPaid) {
+                updatedOrder.isPaid = true
+                updatedOrder.notes = updatedOrder.notes 
+                  ? `${updatedOrder.notes} - Payé à la livraison`
+                  : 'Payé à la livraison'
+              }
+              
+              return updatedOrder
+            }
+            return order
+          })
           
           set({ orders: updatedOrders, isLoading: false })
           localStorage.setItem('admin-orders-v2', JSON.stringify(updatedOrders))
