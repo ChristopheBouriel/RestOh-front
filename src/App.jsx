@@ -19,9 +19,11 @@ import useMenuStore from './store/menuStore'
 import useOrdersStore from './store/ordersStore'
 import useReservationsStore from './store/reservationsStore'
 import useUsersStore from './store/usersStore'
+import useContactsStore from './store/contactsStore'
 import OrdersManagement from './pages/admin/OrdersManagement'
 import ReservationsManagement from './pages/admin/ReservationsManagement'
 import UsersManagement from './pages/admin/UsersManagement'
+import ContactsManagement from './pages/admin/ContactsManagement'
 import Checkout from './pages/checkout/Checkout'
 import { ROUTES } from './constants'
 
@@ -32,14 +34,16 @@ function App() {
   const { initializeOrders } = useOrdersStore()
   const { initializeReservations } = useReservationsStore()
   const { initializeUsers } = useUsersStore()
+  const { initializeMessages } = useContactsStore()
 
   useEffect(() => {
-    // Initialiser le menu, les commandes, les réservations et les utilisateurs au démarrage
+    // Initialiser le menu, les commandes, les réservations, les utilisateurs et les messages au démarrage
     initializeMenu()
     initializeOrders()
     initializeReservations()
     initializeUsers()
-  }, [initializeMenu, initializeOrders, initializeReservations, initializeUsers])
+    initializeMessages()
+  }, [initializeMenu, initializeOrders, initializeReservations, initializeUsers, initializeMessages])
 
   useEffect(() => {
     // Connecter l'utilisateur au panier
@@ -92,6 +96,7 @@ function App() {
           <Route path="orders" element={<OrdersManagement />} />
           <Route path="reservations" element={<ReservationsManagement />} />
           <Route path="users" element={<UsersManagement />} />
+          <Route path="messages" element={<ContactsManagement />} />
         </Route>
         
         {/* Routes sans layout (auth) */}

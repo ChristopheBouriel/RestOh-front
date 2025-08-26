@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { Phone, Mail, MapPin, Clock, Send, MessageSquare } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import useContactsStore from '../../store/contactsStore'
 
 const Contact = () => {
+  const { createMessage, isLoading } = useContactsStore()
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,7 +15,6 @@ const Contact = () => {
     contactReason: 'general'
   })
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const contactReasons = [
     { value: 'general', label: 'Demande générale' },
@@ -66,27 +68,33 @@ const Contact = () => {
       return
     }
     
-    setIsSubmitting(true)
-    
     try {
-      // Simulation d'envoi (remplacer par API réelle)
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      toast.success('Message envoyé avec succès ! Nous vous répondrons rapidement.')
-      
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: '',
-        contactReason: 'general'
+      // Envoyer le message via le store
+      const result = await createMessage({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || null,
+        subject: `${contactReasons.find(r => r.value === formData.contactReason)?.label} - ${formData.subject}`,
+        message: formData.message
       })
+      
+      if (result.success) {
+        toast.success('Message envoyé avec succès ! Nous vous répondrons rapidement.')
+        
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: '',
+          contactReason: 'general'
+        })
+      } else {
+        toast.error('Erreur lors de l\'envoi du message. Veuillez réessayer.')
+      }
     } catch (error) {
       toast.error('Erreur lors de l\'envoi du message. Veuillez réessayer.')
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -285,14 +293,14 @@ const Contact = () => {
                 <div>
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isLoading}
                     className={`w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white ${
-                      isSubmitting
+                      isLoading
                         ? 'bg-gray-400 cursor-not-allowed'
                         : 'bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
                     } transition-colors`}
                   >
-                    {isSubmitting ? (
+                    {isLoading ? (
                       <>
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                         Envoi en cours...

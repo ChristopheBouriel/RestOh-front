@@ -13,6 +13,7 @@ import {
   Settings
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
+import useContactsStore from '../../store/contactsStore'
 import { ROUTES } from '../../constants'
 
 const AdminLayout = () => {
@@ -20,6 +21,7 @@ const AdminLayout = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
+  const { getNewMessagesCount } = useContactsStore()
 
   // Vérifier si l'utilisateur est admin (simulation)
   const isAdmin = user?.role === 'admin' || user?.email === 'admin@restoh.fr'
@@ -128,6 +130,12 @@ const AdminLayout = () => {
               >
                 <Icon className="mr-3 h-5 w-5" />
                 {item.name}
+                {/* Badge pour les nouveaux messages */}
+                {item.name === 'Messages Contact' && getNewMessagesCount() > 0 && (
+                  <span className="ml-auto inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 bg-red-600 rounded-full">
+                    {getNewMessagesCount()}
+                  </span>
+                )}
               </Link>
             )
           })}
