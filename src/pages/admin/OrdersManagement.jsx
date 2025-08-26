@@ -15,6 +15,25 @@ const OrdersManagement = () => {
   const [filterStatus, setFilterStatus] = useState('all')
   const [selectedOrder, setSelectedOrder] = useState(null)
 
+  // Fonction helper pour déterminer la couleur de fond des commandes d'utilisateurs supprimés
+  const getDeletedUserRowClass = (order) => {
+    if (order.userId !== 'deleted-user') {
+      return 'hover:bg-gray-50' // Comportement normal
+    }
+
+    // Cas d'utilisateur supprimé
+    if (order.status === 'delivered' || order.status === 'cancelled') {
+      // Cas n°1 : Livré ou annulé - gris clair mais plus foncé que la pastille
+      return 'bg-gray-100 hover:bg-gray-200'
+    } else if (order.isPaid) {
+      // Cas n°2 : Payé avec autre statut - orange clair
+      return 'bg-orange-50 hover:bg-orange-100'
+    } else {
+      // Cas n°3 : Non payé avec autre statut - rouge très clair
+      return 'bg-red-50 hover:bg-red-100'
+    }
+  }
+
   useEffect(() => {
     initializeOrders()
   }, [initializeOrders])
@@ -76,6 +95,12 @@ const OrdersManagement = () => {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Gestion des Commandes</h1>
         <p className="text-gray-600">Visualisez et gérez toutes les commandes des clients</p>
+        <div className="mt-3 text-xs text-gray-500">
+          <strong>Codes couleur :</strong>
+          <span className="inline-block bg-gray-100 px-2 py-1 rounded mr-2 ml-2">Gris</span>Utilisateur supprimé - Livrée/Annulée
+          <span className="inline-block bg-orange-50 px-2 py-1 rounded mr-2 ml-3">Orange</span>Utilisateur supprimé - Payée en cours
+          <span className="inline-block bg-red-50 px-2 py-1 rounded mr-2 ml-3">Rouge</span>Utilisateur supprimé - Non payée
+        </div>
       </div>
 
       {/* Statistiques */}
@@ -194,7 +219,7 @@ const OrdersManagement = () => {
                   {filteredOrders.map((order) => {
                     const StatusIcon = statusConfig[order.status]?.icon || Package
                     return (
-                      <tr key={order.id} className="hover:bg-gray-50">
+                      <tr key={order.id} className={getDeletedUserRowClass(order)}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
                             {order.id}
@@ -266,7 +291,7 @@ const OrdersManagement = () => {
               {filteredOrders.map((order) => {
                 const StatusIcon = statusConfig[order.status]?.icon || Package
                 return (
-                  <div key={order.id} className="p-4 hover:bg-gray-50">
+                  <div key={order.id} className={`p-4 ${getDeletedUserRowClass(order)}`}>
                     {/* Header de la card */}
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-2">

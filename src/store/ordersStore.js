@@ -63,7 +63,7 @@ const useOrdersStore = create(
               isPaid: true,
               createdAt: yesterday.toISOString(),
               updatedAt: yesterday.toISOString(),
-              notes: ''
+              notes: 'Payé à la réception - commande livrée'
             },
             {
               id: 'order-003',
@@ -97,10 +97,64 @@ const useOrdersStore = create(
               totalAmount: 19.00,
               status: 'cancelled',
               paymentMethod: 'card',
-              isPaid: false,
+              isPaid: true,
               createdAt: threeDaysAgo.toISOString(),
               updatedAt: threeDaysAgo.toISOString(),
-              notes: 'Commande annulée par le client'
+              notes: 'Commande annulée par le client - remboursement effectué'
+            },
+            {
+              id: 'order-005',
+              userId: 'client',
+              userEmail: 'client@example.com',
+              userName: 'Client',
+              deliveryAddress: '123 Rue de la République, 75001 Paris',
+              phone: '06 12 34 56 78',
+              items: [
+                { id: 7, name: 'Salade de Saison', price: 14.50, quantity: 1, image: 'salade-saison.jpg' }
+              ],
+              totalAmount: 14.50,
+              status: 'ready',
+              paymentMethod: 'cash',
+              isPaid: false,
+              createdAt: today.toISOString(),
+              updatedAt: today.toISOString(),
+              notes: 'Commande prête - paiement à la réception'
+            },
+            {
+              id: 'order-006',
+              userId: 'deleted-user',
+              userEmail: 'deleted@account.com',
+              userName: 'Utilisateur supprimé',
+              deliveryAddress: 'Adresse supprimée',
+              phone: 'Téléphone supprimé',
+              items: [
+                { id: 8, name: 'Pizza Pepperoni', price: 17.50, quantity: 1, image: 'pizza-pepperoni.jpg' }
+              ],
+              totalAmount: 17.50,
+              status: 'confirmed',
+              paymentMethod: 'card',
+              isPaid: true,
+              createdAt: yesterday.toISOString(),
+              updatedAt: yesterday.toISOString(),
+              notes: 'Commande d\'un utilisateur supprimé - payée'
+            },
+            {
+              id: 'order-007',
+              userId: 'deleted-user',
+              userEmail: 'deleted@account.com',
+              userName: 'Utilisateur supprimé',
+              deliveryAddress: 'Adresse supprimée',
+              phone: 'Téléphone supprimé',
+              items: [
+                { id: 9, name: 'Soupe du jour', price: 8.50, quantity: 1, image: 'soupe.jpg' }
+              ],
+              totalAmount: 8.50,
+              status: 'preparing',
+              paymentMethod: 'cash',
+              isPaid: false,
+              createdAt: twoDaysAgo.toISOString(),
+              updatedAt: twoDaysAgo.toISOString(),
+              notes: 'Commande d\'un utilisateur supprimé - non payée'
             }
           ]
           
@@ -117,10 +171,14 @@ const useOrdersStore = create(
           // Simulation d'appel API
           await new Promise(resolve => setTimeout(resolve, 800))
           
+          // Appliquer la logique de paiement automatique
+          const isPaid = orderData.paymentMethod === 'card'
+          
           const newOrder = {
             id: `order-${Date.now()}`,
             ...orderData,
             status: 'pending',
+            isPaid: isPaid,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           }
