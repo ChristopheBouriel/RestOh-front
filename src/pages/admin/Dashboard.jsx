@@ -84,7 +84,7 @@ const Dashboard = () => {
           customer: 'Emma Wilson',
           date: '2024-01-22',
           time: '19:30',
-          people: 4,
+          guests: 4,
           status: 'confirmed'
         },
         {
@@ -92,7 +92,7 @@ const Dashboard = () => {
           customer: 'Lucas Bernard',
           date: '2024-01-22',
           time: '20:00',
-          people: 2,
+          guests: 2,
           status: 'pending'
         },
         {
@@ -100,7 +100,7 @@ const Dashboard = () => {
           customer: 'Camille Moreau',
           date: '2024-01-23',
           time: '19:00',
-          people: 6,
+          guests: 6,
           status: 'confirmed'
         }
       ])
@@ -303,7 +303,7 @@ const Dashboard = () => {
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
                       {statusInfo.label}
                     </span>
-                    <p className="text-sm text-gray-500 mt-1">{reservation.people} personnes</p>
+                    <p className="text-sm text-gray-500 mt-1">{reservation.guests} personnes</p>
                   </div>
                 </div>
               )

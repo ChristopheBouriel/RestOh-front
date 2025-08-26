@@ -28,7 +28,7 @@ export const useReservations = () => {
         userEmail: user.email,
         userName: user.name,
         phone: user.phone || '',
-        guests: reservationData.people, // Convertir 'people' en 'guests'
+        guests: reservationData.guests,
         specialRequests: reservationData.requests || ''
       }
       
@@ -54,7 +54,7 @@ export const useReservations = () => {
     try {
       const fullReservationData = {
         ...reservationData,
-        guests: reservationData.people,
+        guests: reservationData.guests,
         specialRequests: reservationData.requests || ''
       }
       
@@ -118,7 +118,7 @@ export const useReservations = () => {
       errors.push('L\'heure est obligatoire')
     }
     
-    if (!data.people || data.people < 1) {
+    if (!data.guests || data.guests < 1) {
       errors.push('Le nombre de personnes doit être au moins 1')
     }
     

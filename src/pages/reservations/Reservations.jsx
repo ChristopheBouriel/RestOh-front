@@ -52,7 +52,7 @@ const Reservations = () => {
     const reservationData = {
       date: selectedDate,
       time: selectedTime,
-      people: partySize,
+      guests: partySize,
       requests: specialRequests
     }
     
@@ -95,7 +95,7 @@ const Reservations = () => {
     const reservationData = {
       date: selectedDate,
       time: selectedTime,
-      people: partySize,
+      guests: partySize,
       requests: specialRequests
     }
     
