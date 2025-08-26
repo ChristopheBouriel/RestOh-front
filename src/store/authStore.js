@@ -311,6 +311,84 @@ const useAuthStore = create(
         }
       },
 
+      // Changer le mot de passe
+      changePassword: async (currentPassword, newPassword) => {
+        set({ isLoading: true, error: null })
+        
+        try {
+          console.log('Change password request')
+          
+          // Simulation d'appel API
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          
+          const currentUser = get().user
+          if (!currentUser) {
+            throw new Error('Aucun utilisateur connecté')
+          }
+
+          // Vérifier le mot de passe actuel
+          const registeredUsers = JSON.parse(localStorage.getItem('registered-users') || '[]')
+          const userIndex = registeredUsers.findIndex(u => u.email === currentUser.email)
+          
+          if (userIndex !== -1) {
+            // Utilisateur enregistré - vérifier avec son hash
+            const { verifyPassword, hashPassword } = await import('../utils/crypto')
+            const user = registeredUsers[userIndex]
+            const isValidCurrentPassword = await verifyPassword(currentPassword, user.password)
+            
+            if (!isValidCurrentPassword) {
+              throw new Error('Mot de passe actuel incorrect')
+            }
+            
+            // Hasher le nouveau mot de passe
+            const newHashedPassword = await hashPassword(newPassword)
+            
+            // Mettre à jour le mot de passe
+            registeredUsers[userIndex].password = newHashedPassword
+            localStorage.setItem('registered-users', JSON.stringify(registeredUsers))
+            
+          } else if (currentUser.email === 'admin@restoh.fr' || currentUser.email === 'client@example.com') {
+            // Comptes par défaut - vérifier avec les hash par défaut et migrer vers registered-users
+            const { verifyPassword, hashPassword } = await import('../utils/crypto')
+            const defaultPasswords = {
+              'admin@restoh.fr': '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', // admin123
+              'client@example.com': '186474c1f2c2f735a54c2cf82ee8e87f2a5cd30940e280029363fecedfc5328c'  // client123
+            }
+            
+            const expectedHash = defaultPasswords[currentUser.email]
+            if (!expectedHash || !(await verifyPassword(currentPassword, expectedHash))) {
+              throw new Error('Mot de passe actuel incorrect')
+            }
+            
+            // Créer l'utilisateur dans registered-users avec le nouveau mot de passe
+            const newHashedPassword = await hashPassword(newPassword)
+            const newUser = {
+              id: currentUser.id,
+              email: currentUser.email,
+              name: currentUser.name,
+              role: currentUser.role,
+              password: newHashedPassword,
+              phone: currentUser.phone || '',
+              createdAt: new Date().toISOString()
+            }
+            
+            registeredUsers.push(newUser)
+            localStorage.setItem('registered-users', JSON.stringify(registeredUsers))
+          } else {
+            throw new Error('Utilisateur introuvable')
+          }
+          
+          set({ isLoading: false })
+          return { success: true }
+        } catch (error) {
+          set({
+            error: error.message || 'Erreur lors du changement de mot de passe',
+            isLoading: false
+          })
+          return { success: false, error: error.message }
+        }
+      },
+
       clearError: () => set({ error: null })
     }),
     {

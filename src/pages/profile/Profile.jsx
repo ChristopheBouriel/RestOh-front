@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { User, Mail, Phone, MapPin, Lock, Save } from 'lucide-react'
+import { toast } from 'react-hot-toast'
 import { useAuth } from '../../hooks/useAuth'
 import DeleteAccountModal from '../../components/profile/DeleteAccountModal'
 
 const Profile = () => {
-  const { user, updateProfile, deleteAccount, isLoading } = useAuth()
+  const { user, updateProfile, deleteAccount, changePassword, isLoading } = useAuth()
   const [activeTab, setActiveTab] = useState('personal')
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -65,13 +66,52 @@ const Profile = () => {
 
   const handleChangePassword = async (e) => {
     e.preventDefault()
-    // TODO: Implement password change logic
-    console.log('Password change:', passwordData)
-    setPasswordData({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    })
+    
+    // Validation
+    if (!passwordData.currentPassword) {
+      toast.error('Le mot de passe actuel est requis')
+      return
+    }
+    
+    if (!passwordData.newPassword) {
+      toast.error('Le nouveau mot de passe est requis')
+      return
+    }
+    
+    if (passwordData.newPassword.length < 6) {
+      toast.error('Le nouveau mot de passe doit faire au moins 6 caractères')
+      return
+    }
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error('Les mots de passe ne correspondent pas')
+      return
+    }
+    
+    if (passwordData.currentPassword === passwordData.newPassword) {
+      toast.error('Le nouveau mot de passe doit être différent de l\'ancien')
+      return
+    }
+    
+    try {
+      const { success, error } = await changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword
+      )
+      
+      if (success) {
+        toast.success('Mot de passe modifié avec succès')
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        })
+      } else {
+        toast.error(error || 'Erreur lors du changement de mot de passe')
+      }
+    } catch (error) {
+      toast.error('Erreur lors du changement de mot de passe')
+    }
   }
 
   const handleDeleteAccount = async (password) => {

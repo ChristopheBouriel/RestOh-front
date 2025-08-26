@@ -16,6 +16,7 @@ export const useAuth = () => {
     logout,
     updateProfile,
     deleteAccount,
+    changePassword,
     clearError
   } = useAuthStore()
 
@@ -76,6 +77,16 @@ export const useAuth = () => {
     }
   }
 
+  const handleChangePassword = async (currentPassword, newPassword) => {
+    const result = await changePassword(currentPassword, newPassword)
+    
+    if (result.success) {
+      return { success: true }
+    } else {
+      return { success: false, error: result.error }
+    }
+  }
+
   // Utilitaires
   const isAdmin = user?.role === 'admin'
   const isUser = user?.role === 'user'
@@ -96,6 +107,7 @@ export const useAuth = () => {
     logout: handleLogout,
     updateProfile: handleUpdateProfile,
     deleteAccount: handleDeleteAccount,
+    changePassword: handleChangePassword,
     clearError
   }
 }
