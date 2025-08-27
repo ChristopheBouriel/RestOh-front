@@ -254,7 +254,7 @@ const MenuManagement = () => {
       {/* Liste des articles */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredItems.map((item) => (
-          <div key={item.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div key={item.id} className="bg-white rounded-lg shadow-sm overflow-hidden flex flex-col">
             <div className="relative">
               <ImageWithFallback
                 src={item.image}
@@ -272,7 +272,7 @@ const MenuManagement = () => {
               </div>
             </div>
 
-            <div className="p-4">
+            <div className="p-4 flex flex-col flex-1">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
                 <span className="text-lg font-bold text-primary-600">€{item.price.toFixed(2)}</span>
@@ -298,7 +298,7 @@ const MenuManagement = () => {
                 </div>
               )}
 
-              <div className="flex space-x-2">
+              <div className="flex space-x-2 mt-auto">
                 <button
                   onClick={() => openEditModal(item)}
                   className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
