@@ -13,6 +13,8 @@ const OrdersManagement = () => {
   } = useOrdersStore()
 
   const [filterStatus, setFilterStatus] = useState('all')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [selectedOrder, setSelectedOrder] = useState(null)
 
   // Fonction helper pour déterminer la couleur de fond des commandes d'utilisateurs supprimés
@@ -38,10 +40,29 @@ const OrdersManagement = () => {
     initializeOrders()
   }, [initializeOrders])
 
-  // Filtrer les commandes selon le statut
-  const filteredOrders = filterStatus === 'all' 
-    ? orders 
-    : orders.filter(order => order.status === filterStatus)
+  // Filtrer les commandes selon le statut et les dates
+  const filteredOrders = orders.filter(order => {
+    const statusMatch = filterStatus === 'all' || order.status === filterStatus
+    
+    let dateMatch = true
+    if (startDate || endDate) {
+      const orderDate = new Date(order.createdAt)
+      
+      if (startDate) {
+        const start = new Date(startDate)
+        start.setHours(0, 0, 0, 0)
+        dateMatch = dateMatch && orderDate >= start
+      }
+      
+      if (endDate) {
+        const end = new Date(endDate)
+        end.setHours(23, 59, 59, 999)
+        dateMatch = dateMatch && orderDate <= end
+      }
+    }
+    
+    return statusMatch && dateMatch
+  })
 
   // Statistiques
   const stats = getOrdersStats()
@@ -147,14 +168,16 @@ const OrdersManagement = () => {
       </div>
 
       {/* Filtres */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
-        <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-          <div className="flex items-center space-x-3">
-            <Filter className="h-5 w-5 text-gray-400" />
+      <div className="bg-white rounded-lg border p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Filtres</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Statut
+            </label>
             <SimpleSelect
               value={filterStatus}
-              onChange={(newStatus) => setFilterStatus(newStatus)}
-              className="w-[180px] sm:w-[200px]"
+              onChange={setFilterStatus}
               options={[
                 { value: 'all', label: 'Toutes les commandes' },
                 { value: 'pending', label: 'En attente' },
@@ -164,7 +187,46 @@ const OrdersManagement = () => {
                 { value: 'delivered', label: 'Livrées' },
                 { value: 'cancelled', label: 'Annulées' }
               ]}
+              className="w-full"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Date de début
+            </label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Date de fin
+            </label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+          <div className="flex items-center space-x-4">
+            {(startDate || endDate || filterStatus !== 'all') && (
+              <button
+                onClick={() => {
+                  setStartDate('')
+                  setEndDate('')
+                  setFilterStatus('all')
+                }}
+                className="text-sm text-blue-600 hover:text-blue-800 underline"
+              >
+                Effacer les filtres
+              </button>
+            )}
           </div>
           <span className="text-sm text-gray-500">
             {filteredOrders.length} commande(s) affichée(s)
