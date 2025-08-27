@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Package, Eye, Clock, CheckCircle, Truck, XCircle, Filter } from 'lucide-react'
 import useOrdersStore from '../../store/ordersStore'
 import SimpleSelect from '../../components/common/SimpleSelect'
+import CustomDatePicker from '../../components/common/CustomDatePicker'
 
 const OrdersManagement = () => {
   const {
@@ -15,6 +16,23 @@ const OrdersManagement = () => {
   const [filterStatus, setFilterStatus] = useState('all')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+
+  // Validation des dates : empêcher que la date de fin soit antérieure à la date de début
+  const handleStartDateChange = (newStartDate) => {
+    setStartDate(newStartDate)
+    // Si la date de fin est antérieure à la nouvelle date de début, la réinitialiser
+    if (endDate && newStartDate && new Date(endDate) < new Date(newStartDate)) {
+      setEndDate('')
+    }
+  }
+
+  const handleEndDateChange = (newEndDate) => {
+    // Ne pas permettre une date de fin antérieure à la date de début
+    if (startDate && newEndDate && new Date(newEndDate) < new Date(startDate)) {
+      return // Ignorer le changement
+    }
+    setEndDate(newEndDate)
+  }
   const [selectedOrder, setSelectedOrder] = useState(null)
 
   // Fonction helper pour déterminer la couleur de fond des commandes d'utilisateurs supprimés
@@ -194,22 +212,23 @@ const OrdersManagement = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Date de début
             </label>
-            <input
-              type="date"
+            <CustomDatePicker
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={handleStartDateChange}
+              placeholder="Sélectionner une date de début"
+              className="w-full"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Date de fin
             </label>
-            <input
-              type="date"
+            <CustomDatePicker
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={handleEndDateChange}
+              placeholder="Sélectionner une date de fin"
+              minDate={startDate || undefined}
+              className="w-full"
             />
           </div>
         </div>
@@ -222,7 +241,7 @@ const OrdersManagement = () => {
                   setEndDate('')
                   setFilterStatus('all')
                 }}
-                className="text-sm text-blue-600 hover:text-blue-800 underline"
+                className="text-sm text-orange-600 hover:text-orange-800 underline"
               >
                 Effacer les filtres
               </button>
@@ -320,7 +339,7 @@ const OrdersManagement = () => {
                           <div className="flex items-center space-x-3">
                             <button
                               onClick={() => setSelectedOrder(order)}
-                              className="text-primary-600 hover:text-primary-900"
+                              className="text-orange-600 hover:text-orange-900"
                             >
                               <Eye className="h-4 w-4" />
                             </button>
@@ -363,7 +382,7 @@ const OrdersManagement = () => {
                           {statusConfig[order.status]?.label}
                         </span>
                       </div>
-                      <span className="text-sm font-bold text-primary-600">
+                      <span className="text-sm font-bold text-orange-600">
                         {formatPrice(order.totalAmount)}
                       </span>
                     </div>
@@ -392,7 +411,7 @@ const OrdersManagement = () => {
                     <div className="flex items-center justify-between">
                       <button
                         onClick={() => setSelectedOrder(order)}
-                        className="flex items-center space-x-2 text-primary-600 hover:text-primary-900 text-sm"
+                        className="flex items-center space-x-2 text-orange-600 hover:text-orange-900 text-sm"
                       >
                         <Eye className="h-4 w-4" />
                         <span>Détails</span>
@@ -511,7 +530,7 @@ const OrdersManagement = () => {
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center text-lg font-bold">
                     <span>Total:</span>
-                    <span className="text-primary-600">{formatPrice(selectedOrder.totalAmount)}</span>
+                    <span className="text-orange-600">{formatPrice(selectedOrder.totalAmount)}</span>
                   </div>
                 </div>
 
