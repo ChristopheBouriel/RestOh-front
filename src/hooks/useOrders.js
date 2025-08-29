@@ -35,7 +35,10 @@ export const useOrders = () => {
 
   const handleConfirmCancellation = (orderId) => {
     if (window.confirm('Êtes-vous sûr de vouloir annuler cette commande ?')) {
-      handleCancelOrder(orderId)
+      handleCancelOrder(orderId).catch(error => {
+        // Error already handled in handleCancelOrder with toast
+        console.error('Order cancellation failed:', error)
+      })
       return true
     }
     return false
