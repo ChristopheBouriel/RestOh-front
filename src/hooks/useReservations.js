@@ -7,13 +7,15 @@ export const useReservations = () => {
   const {
     reservations: allReservations,
     createReservation,
-    updateReservationStatus,
-    getReservationsByUser,
-    getUpcomingReservations
+    updateReservationStatus
   } = useReservationsStore()
 
   // Filtrer les réservations pour l'utilisateur connecté uniquement
-  const userReservations = user ? getReservationsByUser(user.id) : []
+  // ✅ Utiliser allReservations directement pour la réactivité
+  const userReservations = user 
+    ? allReservations.filter(r => r.userId === user.id) 
+    : []
+
 
   const handleCreateReservation = async (reservationData) => {
     if (!user) {
@@ -45,19 +47,13 @@ export const useReservations = () => {
     }
   }
 
-  const handleUpdateReservation = async (reservationId, reservationData) => {
+  const handleUpdateReservation = async (reservationId) => {
     if (!user) {
       toast.error('Vous devez être connecté pour modifier une réservation')
       throw new Error('User not authenticated')
     }
 
     try {
-      const fullReservationData = {
-        ...reservationData,
-        guests: reservationData.guests,
-        specialRequests: reservationData.requests || ''
-      }
-      
       const result = await updateReservationStatus(reservationId, 'pending') // Remet en attente pour re-validation
       if (result.success) {
         toast.success('Réservation modifiée avec succès !')
@@ -78,6 +74,7 @@ export const useReservations = () => {
 
     try {
       const result = await updateReservationStatus(reservationId, 'cancelled')
+      
       if (result.success) {
         toast.success('Réservation annulée')
       } else {
@@ -89,9 +86,9 @@ export const useReservations = () => {
     }
   }
 
-  const handleConfirmCancellation = (reservationId) => {
+  const handleConfirmCancellation = async (reservationId) => {
     if (window.confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) {
-      handleCancelReservation(reservationId)
+      await handleCancelReservation(reservationId)
       return true
     }
     return false

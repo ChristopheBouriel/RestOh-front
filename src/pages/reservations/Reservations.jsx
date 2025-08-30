@@ -37,6 +37,12 @@ const Reservations = () => {
           color: 'text-yellow-600 bg-yellow-50',
           icon: AlertCircle
         }
+      case 'cancelled':
+        return {
+          label: 'Annulée',
+          color: 'text-red-600 bg-red-50',
+          icon: AlertCircle
+        }
       default:
         return {
           label: 'Inconnue',
@@ -85,8 +91,8 @@ const Reservations = () => {
     toast.info('Modification activée - utilisez le formulaire ci-dessus')
   }
 
-  const handleCancelReservation = (reservationId) => {
-    cancelReservation(reservationId)
+  const handleCancelReservation = async (reservationId) => {
+    await cancelReservation(reservationId)
   }
 
   const handleUpdate = (e) => {
