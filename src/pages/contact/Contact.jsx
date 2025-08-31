@@ -59,6 +59,15 @@ const Contact = () => {
     return errors
   }
 
+  // Vérifier si le formulaire est valide pour activer/désactiver le bouton
+  const isFormValid = () => {
+    return formData.name.trim() && 
+           formData.email.trim() && 
+           /\S+@\S+\.\S+/.test(formData.email) &&
+           formData.subject.trim() && 
+           formData.message.trim().length >= 10
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     
@@ -185,7 +194,7 @@ const Contact = () => {
                 Envoyez-nous un message
               </h2>
               
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6" role="form">
                 {/* Raison du contact */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -293,9 +302,9 @@ const Contact = () => {
                 <div>
                   <button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || !isFormValid()}
                     className={`w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white ${
-                      isLoading
+                      isLoading || !isFormValid()
                         ? 'bg-gray-400 cursor-not-allowed'
                         : 'bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
                     } transition-colors`}
