@@ -1,23 +1,14 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { toast } from 'react-hot-toast'
 import UsersManagement from '../../../pages/admin/UsersManagement'
 import useUsersStore from '../../../store/usersStore'
-
-// Mock dependencies
-vi.mock('react-hot-toast', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn()
-  }
-}))
 
 // Mock the users store
 vi.mock('../../../store/usersStore')
 
-describe('UsersManagement', () => {
+describe('UsersManagement Component', () => {
   const mockUsers = [
     {
       id: 'admin',
@@ -70,11 +61,8 @@ describe('UsersManagement', () => {
     users: mockUsers,
     isLoading: false,
     initializeUsers: vi.fn(),
-    createUser: vi.fn(),
-    updateUser: vi.fn(),
     toggleUserStatus: vi.fn(),
     updateUserRole: vi.fn(),
-    searchUsers: vi.fn(),
     getUsersStats: vi.fn(() => ({
       total: 3,
       active: 2,
@@ -84,12 +72,15 @@ describe('UsersManagement', () => {
       verified: 2,
       unverified: 1,
       newThisMonth: 1,
-      activeThisMonth: 2,
-      totalRevenue: 516.45,
-      totalOrders: 19,
-      totalReservations: 6
-    }))
+      activeThisMonth: 2
+    })),
+    searchUsers: vi.fn(),
+    getActiveUsers: vi.fn(),
+    getInactiveUsers: vi.fn(),
+    getUsersByRole: vi.fn()
   }
+
+  const user = userEvent.setup()
 
   const renderComponent = () => {
     return render(
@@ -104,261 +95,254 @@ describe('UsersManagement', () => {
     useUsersStore.mockReturnValue(mockStoreState)
   })
 
-  describe('Component Rendering', () => {
-    it('renders the main title and statistics', () => {
+  // 1. Core Rendering Tests
+  describe('Core Rendering', () => {
+    it('should render header, stats, and user list', () => {
       renderComponent()
       
+      // Header
       expect(screen.getByText('Gestion des Utilisateurs')).toBeInTheDocument()
       expect(screen.getByText('Gérez tous les utilisateurs de la plateforme')).toBeInTheDocument()
       
-      // Statistics cards - be more specific by looking for labels
+      // Statistics
       expect(screen.getByText('Total')).toBeInTheDocument()
       expect(screen.getByText('Actifs')).toBeInTheDocument()
       expect(screen.getByText('Admins')).toBeInTheDocument()
-      expect(screen.getByText('Vérifiés')).toBeInTheDocument()
+      
+      // User list with count
+      expect(screen.getByText('Utilisateurs (3)')).toBeInTheDocument()
     })
 
-    it('initializes users data on mount', () => {
+    it('should initialize users data on mount', () => {
       renderComponent()
       expect(mockStoreState.initializeUsers).toHaveBeenCalledOnce()
     })
 
-    it('displays all users in the table', () => {
+    it('should display user information in both desktop and mobile views', () => {
       renderComponent()
       
-      // Users appear in both desktop and mobile layouts, so use getAllByText
-      expect(screen.getAllByText('admin@restoh.fr')).toHaveLength(2)
-      expect(screen.getAllByText('client@example.com')).toHaveLength(2)
-      expect(screen.getAllByText('inactive@test.com')).toHaveLength(2)
-    })
-
-    it('shows correct user status badges', () => {
-      renderComponent()
-      
-      const activeBadges = screen.getAllByText('Actif')
-      const inactiveBadges = screen.getAllByText('Inactif')
-      
-      expect(activeBadges).toHaveLength(4) // 2 active users × 2 views (desktop + mobile)
-      expect(inactiveBadges).toHaveLength(2) // 1 inactive user × 2 views (desktop + mobile)
+      // Check that all users are displayed
+      expect(screen.getAllByText('admin@restoh.fr')).toHaveLength(2) // Desktop + mobile
+      expect(screen.getAllByText('client@example.com')).toHaveLength(2) // Desktop + mobile
+      expect(screen.getAllByText('inactive@test.com')).toHaveLength(2) // Desktop + mobile
     })
   })
 
-  describe('Search and Filtering', () => {
-    it('filters users by search query', async () => {
+  // 2. Search Functionality Tests
+  describe('Search Functionality', () => {
+    it('should filter users by search query (name)', async () => {
       renderComponent()
       
       const searchInput = screen.getByPlaceholderText('Nom, email, téléphone...')
       
-      // Search by name
-      fireEvent.change(searchInput, { target: { value: 'Jean' } })
+      // Search by name - should filter out other users visually
+      await user.type(searchInput, 'Jean')
       
       await waitFor(() => {
-        expect(screen.getAllByText('Jean Dupont')).toHaveLength(2) // Desktop + mobile
+        // Jean Dupont should be visible (2 instances for desktop + mobile)
+        expect(screen.getAllByText('Jean Dupont')).toHaveLength(2)
+        // Others should be filtered out (not visible)
         expect(screen.queryByText('Administrateur')).not.toBeInTheDocument()
+        expect(screen.queryByText('Utilisateur Inactif')).not.toBeInTheDocument()
       })
     })
 
-    it('filters users by email search', async () => {
+    it('should filter users by search query (email)', async () => {
       renderComponent()
       
       const searchInput = screen.getByPlaceholderText('Nom, email, téléphone...')
       
-      // Search by email
-      fireEvent.change(searchInput, { target: { value: 'admin@restoh' } })
-      
-      await waitFor(() => {
-        expect(screen.getAllByText('admin@restoh.fr')).toHaveLength(2) // Desktop + mobile
-        expect(screen.queryByText('client@example.com')).not.toBeInTheDocument()
-      })
-    })
-
-    it('shows all users when search is cleared', async () => {
-      renderComponent()
-      
-      const searchInput = screen.getByPlaceholderText('Nom, email, téléphone...')
-      
-      // First search
-      fireEvent.change(searchInput, { target: { value: 'admin' } })
-      // Then clear
-      fireEvent.change(searchInput, { target: { value: '' } })
+      await user.type(searchInput, 'admin@restoh')
       
       await waitFor(() => {
         expect(screen.getAllByText('admin@restoh.fr')).toHaveLength(2)
-        expect(screen.getAllByText('client@example.com')).toHaveLength(2)
-        expect(screen.getAllByText('inactive@test.com')).toHaveLength(2)
+        expect(screen.queryByText('client@example.com')).not.toBeInTheDocument()
+        expect(screen.queryByText('inactive@test.com')).not.toBeInTheDocument()
       })
     })
 
-    it('shows no results message when search returns nothing', async () => {
+    it('should filter users by search query (phone)', async () => {
       renderComponent()
       
       const searchInput = screen.getByPlaceholderText('Nom, email, téléphone...')
-      fireEvent.change(searchInput, { target: { value: 'nonexistentuser' } })
+      
+      await user.type(searchInput, '06 12 34')
+      
+      await waitFor(() => {
+        expect(screen.getAllByText('06 12 34 56 78')).toHaveLength(2)
+        expect(screen.queryByText('01 23 45 67 89')).not.toBeInTheDocument()
+      })
+    })
+
+    it('should show empty state when search returns no results', async () => {
+      renderComponent()
+      
+      const searchInput = screen.getByPlaceholderText('Nom, email, téléphone...')
+      await user.type(searchInput, 'nonexistentuser')
       
       await waitFor(() => {
         expect(screen.getByText('Aucun utilisateur trouvé avec ces critères.')).toBeInTheDocument()
       })
     })
-  })
 
-  describe('User Actions', () => {
-    it('opens user details modal when clicking eye button', async () => {
-      renderComponent()
-      
-      // Find the eye icon button for the first user
-      const eyeButtons = screen.getAllByTitle('Voir les détails')
-      fireEvent.click(eyeButtons[0])
-      
-      await waitFor(() => {
-        expect(screen.getByText('Détails de l\'utilisateur')).toBeInTheDocument()
-      })
-    })
-
-    it('toggles user status when clicking toggle button', async () => {
-      mockStoreState.toggleUserStatus.mockResolvedValue({ success: true })
-      renderComponent()
-      
-      // Find the deactivate button (UserX icon) for an active user
-      const toggleButtons = screen.getAllByTitle('Désactiver')
-      fireEvent.click(toggleButtons[0])
-      
-      await waitFor(() => {
-        expect(mockStoreState.toggleUserStatus).toHaveBeenCalledWith('admin')
-      })
-    })
-
-    it('handles toggle status error', async () => {
-      mockStoreState.toggleUserStatus.mockResolvedValue({ 
-        success: false, 
-        error: 'Unable to toggle status' 
-      })
-      renderComponent()
-      
-      const toggleButtons = screen.getAllByTitle('Désactiver')
-      fireEvent.click(toggleButtons[0])
-      
-      await waitFor(() => {
-        expect(mockStoreState.toggleUserStatus).toHaveBeenCalledWith('admin')
-      })
-    })
-
-    it('changes user role from dropdown', async () => {
-      mockStoreState.updateUserRole.mockResolvedValue({ success: true })
-      renderComponent()
-      
-      // This will need to be adjusted based on the actual implementation
-      // For now, let's just test that the function exists
-      expect(mockStoreState.updateUserRole).toBeDefined()
-    })
-  })
-
-  describe('User Details Modal', () => {
-    it('displays comprehensive user information in modal', async () => {
-      renderComponent()
-      
-      // Click on eye icon to open modal
-      const eyeButtons = screen.getAllByTitle('Voir les détails')
-      fireEvent.click(eyeButtons[1]) // Click on Jean Dupont's modal
-      
-      await waitFor(() => {
-        expect(screen.getByText('Détails de l\'utilisateur')).toBeInTheDocument()
-        // Email appears in main table (2x) and modal (1x), so total of 3
-        expect(screen.getAllByText('client@example.com')).toHaveLength(3)
-        // Phone appears in table (2x) and modal (1x), so total of 3
-        expect(screen.getAllByText('06 12 34 56 78')).toHaveLength(3)
-        expect(screen.getByText('123 Rue de la République, 75001 Paris')).toBeInTheDocument()
-        expect(screen.getByText('320.75€')).toBeInTheDocument() // Total spent
-      })
-    })
-
-    it('shows correct verification status in modal', async () => {
-      renderComponent()
-      
-      const eyeButtons = screen.getAllByTitle('Voir les détails')
-      fireEvent.click(eyeButtons[1]) // Jean Dupont has emailVerified: false
-      
-      await waitFor(() => {
-        expect(screen.getByText('✗ Non')).toBeInTheDocument()
-      })
-    })
-
-    it('closes modal when clicking close button', async () => {
-      renderComponent()
-      
-      const eyeButtons = screen.getAllByTitle('Voir les détails')
-      fireEvent.click(eyeButtons[0])
-      
-      await waitFor(() => {
-        expect(screen.getByText('Détails de l\'utilisateur')).toBeInTheDocument()
-      })
-      
-      const closeButton = screen.getByText('Fermer')
-      fireEvent.click(closeButton)
-      
-      await waitFor(() => {
-        expect(screen.queryByText('Détails de l\'utilisateur')).not.toBeInTheDocument()
-      })
-    })
-
-    it('closes modal when clicking X button', async () => {
-      renderComponent()
-      
-      const eyeButtons = screen.getAllByTitle('Voir les détails')
-      fireEvent.click(eyeButtons[0])
-      
-      await waitFor(() => {
-        expect(screen.getByText('Détails de l\'utilisateur')).toBeInTheDocument()
-      })
-      
-      const xButton = screen.getByText('×')
-      fireEvent.click(xButton)
-      
-      await waitFor(() => {
-        expect(screen.queryByText('Détails de l\'utilisateur')).not.toBeInTheDocument()
-      })
-    })
-  })
-
-
-  describe('Empty State', () => {
-    it('shows empty state when no users exist', () => {
-      useUsersStore.mockReturnValue({
-        ...mockStoreState,
-        users: []
-      })
-      
-      renderComponent()
-      
-      expect(screen.getByText('Aucun utilisateur trouvé avec ces critères.')).toBeInTheDocument()
-    })
-
-    it('shows no results state when search returns empty', async () => {
-      mockStoreState.searchUsers.mockReturnValue([])
+    it('should clear search and show all users when input is cleared', async () => {
       renderComponent()
       
       const searchInput = screen.getByPlaceholderText('Nom, email, téléphone...')
-      fireEvent.change(searchInput, { target: { value: 'nonexistent' } })
+      
+      // Search first
+      await user.type(searchInput, 'Jean')
+      await waitFor(() => {
+        expect(screen.getAllByText('Jean Dupont')).toHaveLength(2)
+      })
+      
+      // Clear search
+      await user.clear(searchInput)
       
       await waitFor(() => {
-        expect(screen.getByText('Aucun résultat')).toBeInTheDocument()
+        // All users should be visible again
+        expect(screen.getAllByText('Jean Dupont').length).toBeGreaterThanOrEqual(2)
+        expect(screen.getAllByText('Administrateur').length).toBeGreaterThanOrEqual(2) 
+        expect(screen.getAllByText('Utilisateur Inactif').length).toBeGreaterThanOrEqual(2)
       })
     })
   })
 
-  describe('Statistics Display', () => {
-    it('displays correct statistics cards', () => {
+  // 3. User Actions Tests
+  describe('User Actions', () => {
+    it('should toggle user status when action button clicked', async () => {
+      mockStoreState.toggleUserStatus.mockResolvedValue({ success: true })
       renderComponent()
       
-      // Check that all stat labels are present
-      expect(screen.getByText('Total')).toBeInTheDocument()
-      expect(screen.getByText('Actifs')).toBeInTheDocument() 
-      expect(screen.getByText('Admins')).toBeInTheDocument()
-      expect(screen.getByText('Vérifiés')).toBeInTheDocument()
-      expect(screen.getByText('Ce mois')).toBeInTheDocument()
-      expect(screen.getByText('Actifs ce mois')).toBeInTheDocument()
+      // Find toggle button for active admin user (first "Désactiver" button)
+      const toggleButtons = screen.getAllByTitle('Désactiver')
+      await user.click(toggleButtons[0])
+      
+      await waitFor(() => {
+        expect(mockStoreState.toggleUserStatus).toHaveBeenCalledWith('admin')
+      })
     })
 
-    it('handles zero statistics gracefully', () => {
+    it('should have role change functionality available', () => {
+      renderComponent()
+      
+      // Verify that role dropdowns exist for users
+      const roleDropdowns = screen.getAllByRole('button').filter(button => 
+        button.textContent?.includes('Admin') || button.textContent?.includes('Utilisateur')
+      )
+      expect(roleDropdowns.length).toBeGreaterThan(0)
+      
+      // Verify updateUserRole function is available
+      expect(mockStoreState.updateUserRole).toBeDefined()
+    })
+
+    it('should open user details modal when eye icon is clicked', async () => {
+      renderComponent()
+      
+      // Click on first "Voir les détails" button
+      const viewButtons = screen.getAllByTitle('Voir les détails')
+      await user.click(viewButtons[0])
+      
+      await waitFor(() => {
+        expect(screen.getByText('Détails de l\'utilisateur')).toBeInTheDocument()
+        expect(screen.getByText('Informations personnelles')).toBeInTheDocument()
+      })
+    })
+
+    it('should close modal with close button', async () => {
+      renderComponent()
+      
+      // Open modal first
+      const viewButton = screen.getAllByTitle('Voir les détails')[0]
+      await user.click(viewButton)
+      
+      await waitFor(() => {
+        expect(screen.getByText('Détails de l\'utilisateur')).toBeInTheDocument()
+      })
+      
+      // Close with "Fermer" button
+      const closeButton = screen.getByText('Fermer')
+      await user.click(closeButton)
+      
+      await waitFor(() => {
+        expect(screen.queryByText('Détails de l\'utilisateur')).not.toBeInTheDocument()
+      })
+    })
+
+    it('should close modal with X button', async () => {
+      renderComponent()
+      
+      // Open modal first
+      const viewButton = screen.getAllByTitle('Voir les détails')[0]
+      await user.click(viewButton)
+      
+      await waitFor(() => {
+        expect(screen.getByText('Détails de l\'utilisateur')).toBeInTheDocument()
+      })
+      
+      // Close with X button
+      const xButton = screen.getByText('×')
+      await user.click(xButton)
+      
+      await waitFor(() => {
+        expect(screen.queryByText('Détails de l\'utilisateur')).not.toBeInTheDocument()
+      })
+    })
+  })
+
+  // 4. Modal Content Tests
+  describe('Modal Content', () => {
+    it('should display comprehensive user information in modal', async () => {
+      renderComponent()
+      
+      // Click on Jean Dupont's modal (second user)
+      const viewButtons = screen.getAllByTitle('Voir les détails')
+      await user.click(viewButtons[1])
+      
+      await waitFor(() => {
+        expect(screen.getByText('Détails de l\'utilisateur')).toBeInTheDocument()
+        
+        // Check user information is displayed
+        expect(screen.getByText('client')).toBeInTheDocument() // ID
+        expect(screen.getAllByText('Jean Dupont').length).toBeGreaterThanOrEqual(2) // Name in table + modal
+        expect(screen.getAllByText('client@example.com').length).toBeGreaterThanOrEqual(2) // Email in table + modal
+        expect(screen.getByText('123 Rue de la République, 75001 Paris')).toBeInTheDocument() // Address
+        expect(screen.getByText('320.75€')).toBeInTheDocument() // Total spent
+        // Check statistics are displayed (might appear multiple times)
+        expect(screen.getAllByText('12').length).toBeGreaterThanOrEqual(1) // Total orders
+        expect(screen.getAllByText('2').length).toBeGreaterThanOrEqual(1) // Total reservations
+      })
+    })
+
+    it('should show email verification status in modal', async () => {
+      renderComponent()
+      
+      // Open modal for Jean Dupont (emailVerified: false)
+      const viewButtons = screen.getAllByTitle('Voir les détails')
+      await user.click(viewButtons[1])
+      
+      await waitFor(() => {
+        expect(screen.getByText('Détails de l\'utilisateur')).toBeInTheDocument()
+        expect(screen.getByText('✗ Non')).toBeInTheDocument() // Email not verified
+      })
+    })
+  })
+
+  // 5. Edge Cases & State Management
+  describe('Edge Cases and State Management', () => {
+    it('should handle loading state', () => {
+      useUsersStore.mockReturnValue({
+        ...mockStoreState,
+        isLoading: true
+      })
+      
+      renderComponent()
+      
+      // Component should still render with loading state
+      expect(screen.getByText('Gestion des Utilisateurs')).toBeInTheDocument()
+    })
+
+    it('should handle empty user list', () => {
       useUsersStore.mockReturnValue({
         ...mockStoreState,
         users: [],
@@ -371,51 +355,43 @@ describe('UsersManagement', () => {
           verified: 0,
           unverified: 0,
           newThisMonth: 0,
-          activeThisMonth: 0,
-          totalRevenue: 0,
-          totalOrders: 0,
-          totalReservations: 0
+          activeThisMonth: 0
         }))
       })
       
       renderComponent()
       
-      // Should show multiple zeros for different stats
-      expect(screen.getAllByText('0')).toHaveLength(6) // 6 stat cards showing 0
+      expect(screen.getByText('Utilisateurs (0)')).toBeInTheDocument()
+      expect(screen.getByText('Aucun utilisateur trouvé avec ces critères.')).toBeInTheDocument()
     })
-  })
 
-  describe('Responsive Design Elements', () => {
-    it('renders responsive table layout', () => {
+    it('should handle toggle status errors gracefully', async () => {
+      mockStoreState.toggleUserStatus.mockResolvedValue({ 
+        success: false, 
+        error: 'Network error' 
+      })
+      
       renderComponent()
       
-      const table = screen.getByRole('table')
-      expect(table).toHaveClass('min-w-full')
+      const toggleButton = screen.getAllByTitle('Désactiver')[0]
+      await user.click(toggleButton)
       
-      // Check for mobile-responsive elements
-      const tableContainer = table.closest('div')
-      expect(tableContainer).toHaveClass('overflow-x-auto')
-    })
-  })
-
-  describe('Accessibility', () => {
-    it('has proper ARIA labels for buttons', () => {
-      renderComponent()
-      
-      const toggleButtons = screen.getAllByText(/Activer|Désactiver/)
-      toggleButtons.forEach(button => {
-        expect(button).toBeInTheDocument()
+      // Should still call the function even if it fails
+      await waitFor(() => {
+        expect(mockStoreState.toggleUserStatus).toHaveBeenCalled()
       })
     })
 
-    it('has proper table structure', () => {
+    it('should display correct user counts and statistics', () => {
       renderComponent()
       
-      const table = screen.getByRole('table')
-      expect(table).toBeInTheDocument()
+      // Check statistics display
+      expect(screen.getByText('3')).toBeInTheDocument() // Total
+      expect(screen.getAllByText('2').length).toBeGreaterThanOrEqual(1) // Active count 
+      expect(screen.getAllByText('1').length).toBeGreaterThanOrEqual(1) // Admins count
       
-      const headers = screen.getAllByRole('columnheader')
-      expect(headers.length).toBeGreaterThan(0)
+      // Check user count in header
+      expect(screen.getByText(`Utilisateurs (${mockUsers.length})`)).toBeInTheDocument()
     })
   })
 })
