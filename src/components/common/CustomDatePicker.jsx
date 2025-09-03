@@ -5,8 +5,11 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Sélectionner une da
   const [isOpen, setIsOpen] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(value ? new Date(value) : null)
+  const [inputValue, setInputValue] = useState('')
+  const [inputError, setInputError] = useState('')
   const pickerRef = useRef(null)
   const buttonRef = useRef(null)
+  const inputRef = useRef(null)
 
   // Mois en français
   const monthNames = [
@@ -16,6 +19,57 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Sélectionner une da
 
   // Jours de la semaine
   const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
+
+  // Parse date from manual input (accepts DD/MM/YYYY or YYYY-MM-DD formats)
+  const parseInputDate = (input) => {
+    if (!input || typeof input !== 'string') return null
+    
+    const trimmed = input.trim()
+    
+    // Format DD/MM/YYYY
+    const frenchDateRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+    const frenchMatch = trimmed.match(frenchDateRegex)
+    
+    if (frenchMatch) {
+      const [, day, month, year] = frenchMatch
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+      
+      // Validate that the date is valid (handles edge cases like 31/02/2024)
+      if (date.getFullYear() == year && 
+          date.getMonth() == month - 1 && 
+          date.getDate() == day) {
+        return date
+      }
+    }
+    
+    // Format YYYY-MM-DD
+    const isoDateRegex = /^(\d{4})-(\d{1,2})-(\d{1,2})$/
+    const isoMatch = trimmed.match(isoDateRegex)
+    
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+      
+      // Validate that the date is valid
+      if (date.getFullYear() == year && 
+          date.getMonth() == month - 1 && 
+          date.getDate() == day) {
+        return date
+      }
+    }
+    
+    return null
+  }
+
+  // Format date for input display (DD/MM/YYYY)
+  const formatDateForInput = (date) => {
+    if (!date) return ''
+    return date.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
+  }
 
   // Fermer au clic extérieur
   useEffect(() => {
@@ -42,9 +96,12 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Sélectionner une da
       const newDate = new Date(value)
       setSelectedDate(newDate)
       setCurrentDate(newDate)
+      setInputValue(formatDateForInput(newDate))
     } else {
       setSelectedDate(null)
+      setInputValue('')
     }
+    setInputError('')
   }, [value])
 
   // Navigation mois précédent
@@ -66,7 +123,12 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Sélectionner une da
     if (maxDate && newDate > new Date(maxDate)) return
 
     setSelectedDate(newDate)
-    const formattedDate = newDate.toISOString().split('T')[0]
+    setInputValue(formatDateForInput(newDate))
+    // Format as YYYY-MM-DD avoiding timezone issues
+    const year = newDate.getFullYear()
+    const month = String(newDate.getMonth() + 1).padStart(2, '0')
+    const dayPart = String(newDate.getDate()).padStart(2, '0')
+    const formattedDate = `${year}-${month}-${dayPart}`
     onChange(formattedDate)
     setIsOpen(false)
   }
@@ -81,8 +143,97 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Sélectionner une da
   // Effacer la sélection
   const clearDate = () => {
     setSelectedDate(null)
+    setInputValue('')
+    setInputError('')
     onChange('')
     setIsOpen(false)
+  }
+
+  // Gérer les changements dans l'input manuel
+  const handleInputChange = (e) => {
+    const newValue = e.target.value
+    setInputValue(newValue)
+    setInputError('')
+    
+    // Si l'input est vide, clear la date
+    if (!newValue.trim()) {
+      if (selectedDate) {
+        setSelectedDate(null)
+        onChange('')
+      }
+      return
+    }
+    
+    // Essayer de parser la date
+    const parsedDate = parseInputDate(newValue)
+    if (parsedDate) {
+      // Vérifier les contraintes min/max
+      if (minDate && parsedDate < new Date(minDate)) {
+        setInputError('Date trop ancienne')
+        return
+      }
+      if (maxDate && parsedDate > new Date(maxDate)) {
+        setInputError('Date trop récente')
+        return
+      }
+      
+      // Date valide - mettre à jour
+      setSelectedDate(parsedDate)
+      setCurrentDate(parsedDate)
+      // Format as YYYY-MM-DD avoiding timezone issues
+      const year = parsedDate.getFullYear()
+      const month = String(parsedDate.getMonth() + 1).padStart(2, '0')
+      const dayPart = String(parsedDate.getDate()).padStart(2, '0')
+      const formattedDate = `${year}-${month}-${dayPart}`
+      onChange(formattedDate)
+    }
+  }
+
+  // Gérer la validation au blur de l'input
+  const handleInputBlur = () => {
+    if (!inputValue.trim()) {
+      setInputError('')
+      return
+    }
+    
+    const parsedDate = parseInputDate(inputValue)
+    if (!parsedDate) {
+      setInputError('Format invalide (DD/MM/YYYY)')
+      return
+    }
+    
+    // Vérifier les contraintes
+    if (minDate && parsedDate < new Date(minDate)) {
+      setInputError('Date trop ancienne')
+      return
+    }
+    if (maxDate && parsedDate > new Date(maxDate)) {
+      setInputError('Date trop récente')
+      return
+    }
+    
+    // Reformater la date correctement
+    setInputValue(formatDateForInput(parsedDate))
+    setInputError('')
+  }
+
+  // Gérer les touches spéciales dans l'input
+  const handleInputKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleInputBlur()
+      inputRef.current?.blur()
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      // Restaurer la valeur précédente
+      if (selectedDate) {
+        setInputValue(formatDateForInput(selectedDate))
+      } else {
+        setInputValue('')
+      }
+      setInputError('')
+      inputRef.current?.blur()
+    }
   }
 
   // Générer les jours du calendrier
@@ -138,25 +289,44 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Sélectionner une da
 
   return (
     <div ref={pickerRef} className="relative">
-      <button
-        ref={buttonRef}
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between px-3 py-1.5 bg-white border border-gray-300 rounded-md text-xs transition-colors group ${
-          isOpen 
-            ? 'outline-none ring-0 border-gray-300' 
-            : 'focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 hover:border-orange-500'
-        } ${className || 'w-full'}`}
-      >
-        <span className={`${selectedDate ? 'text-gray-900' : 'text-gray-500'} pr-3`}>
-          {formatDisplayDate(selectedDate)}
-        </span>
-        <Calendar className={`h-4 w-4 transition-all duration-200 ${
-          isOpen 
-            ? 'text-orange-500' 
-            : 'text-gray-400 group-hover:text-orange-500'
-        }`} />
-      </button>
+      {/* Conteneur de l'input avec bouton calendrier */}
+      <div className={`flex items-center bg-white border border-gray-300 rounded-md transition-colors ${
+        isOpen 
+          ? 'outline-none ring-0 border-gray-300' 
+          : 'focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500 hover:border-orange-500'
+      } ${className || 'w-full'}`}>
+        
+        {/* Input manuel */}
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          onBlur={handleInputBlur}
+          onKeyDown={handleInputKeyDown}
+          placeholder="DD/MM/YYYY"
+          className="flex-1 px-3 py-1.5 text-xs bg-transparent border-none outline-none text-gray-900 placeholder-gray-500"
+        />
+        
+        {/* Bouton calendrier */}
+        <button
+          ref={buttonRef}
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="px-2 py-1.5 text-gray-400 hover:text-orange-500 transition-colors"
+        >
+          <Calendar className={`h-4 w-4 transition-all duration-200 ${
+            isOpen ? 'text-orange-500' : ''
+          }`} />
+        </button>
+      </div>
+      
+      {/* Message d'erreur */}
+      {inputError && (
+        <div className="mt-1 text-xs text-red-600">
+          {inputError}
+        </div>
+      )}
 
       {isOpen && (
         <div className="absolute top-0 left-0 bg-white border-2 border-orange-500 rounded-md shadow-lg z-50 p-4 w-full min-w-[280px]">
