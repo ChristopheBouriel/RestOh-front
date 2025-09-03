@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Calendar, Clock, Users, Plus, Edit, Trash2, CheckCircle, AlertCircle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { useReservations } from '../../hooks/useReservations'
+import CustomDatePicker from '../../components/common/CustomDatePicker'
 
 const Reservations = () => {
   const [selectedDate, setSelectedDate] = useState('')
@@ -160,13 +161,12 @@ const Reservations = () => {
                   <Calendar className="w-4 h-4 inline mr-2" />
                   Date
                 </label>
-                <input
-                  type="date"
+                <CustomDatePicker
                   value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  min={today}
-                  required
+                  onChange={setSelectedDate}
+                  minDate={today}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="Sélectionner une date"
                 />
               </div>
 
