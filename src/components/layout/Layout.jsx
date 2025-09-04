@@ -22,7 +22,7 @@ const Layout = () => {
       
       {/* Toast notifications */}
       <Toaster 
-        position="top-right"
+        position="top-left"
         toastOptions={{
           duration: 4000,
           style: {
