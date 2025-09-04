@@ -8,8 +8,14 @@ vi.mock('../../utils/crypto', () => ({
   verifyPassword: vi.fn()
 }))
 
-// Get mocked functions
-const { hashPassword: mockHashPassword, verifyPassword: mockVerifyPassword } = await import('../../utils/crypto')
+// Get mocked functions via dynamic import
+let mockHashPassword, mockVerifyPassword
+
+beforeAll(async () => {
+  const crypto = await import('../../utils/crypto')
+  mockHashPassword = crypto.hashPassword
+  mockVerifyPassword = crypto.verifyPassword
+})
 
 describe('Auth Store', () => {
   // Mock localStorage

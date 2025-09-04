@@ -11,7 +11,15 @@ export default [
     languageOptions: {
       ecmaVersion: 2020,
       sourceType: 'module',
-      globals: globals.browser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.es2020,
+      },
     },
     settings: { 
       react: { version: '18.2' } 
@@ -29,6 +37,39 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      'react/prop-types': 'off',
+      'react/no-unescaped-entities': 'off',
+      'no-unused-vars': 'warn',
+      'react-hooks/exhaustive-deps': 'warn',
+    },
+  },
+  {
+    files: ['**/*.test.{js,jsx}', '**/__tests__/**/*.{js,jsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.es2020,
+        ...globals.node,
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        vi: 'readonly',
+        global: 'readonly',
+      },
+    },
+  },
+  {
+    files: ['tailwind.config.js', 'vite.config.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        module: 'readonly',
+      },
     },
   },
   {

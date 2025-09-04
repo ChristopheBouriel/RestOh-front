@@ -387,9 +387,7 @@ const useAuthStore = create(
           })
           return { success: false, error: error.message }
         }
-      },
-
-      clearError: () => set({ error: null })
+      }
     }),
     {
       name: 'auth-storage',
