@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 
-const SimpleSelect = ({ value, onChange, options = [], className = '' }) => {
+const SimpleSelect = ({ value, onChange, options = [], className = '', disabled = false }) => {
   const [isOpen, setIsOpen] = useState(false)
   const selectRef = useRef(null)
   const buttonRef = useRef(null)
@@ -32,24 +32,29 @@ const SimpleSelect = ({ value, onChange, options = [], className = '' }) => {
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between px-3 py-1.5 bg-white border border-gray-300 rounded-md text-xs transition-colors group ${
-          isOpen 
-            ? 'outline-none ring-0 border-gray-300' 
-            : 'focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 hover:border-orange-500'
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className={`flex items-center justify-between px-3 py-1.5 border border-gray-300 rounded-md text-xs transition-colors group ${
+          disabled 
+            ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+            : isOpen 
+              ? 'bg-white outline-none ring-0 border-gray-300' 
+              : 'bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 hover:border-orange-500'
         } ${className || 'w-auto min-w-[100px]'}`}
       >
         <span className="text-gray-900 pr-3">{selectedOption?.label}</span>
         <span className={`transition-all duration-200 ${
-          isOpen 
-            ? 'rotate-180 text-gray-400' 
-            : 'text-gray-400 group-hover:text-orange-500'
+          disabled
+            ? 'text-gray-300'
+            : isOpen 
+              ? 'rotate-180 text-gray-400' 
+              : 'text-gray-400 group-hover:text-orange-500'
         }`}>
           ▼
         </span>
       </button>
       
-      {isOpen && (
+      {isOpen && !disabled && (
         <div className={`absolute top-0 left-0 bg-white border-2 border-orange-500 rounded-md shadow-lg z-50 ${className || 'w-auto min-w-[100px]'}`}>
           {options.map((option) => (
             <div

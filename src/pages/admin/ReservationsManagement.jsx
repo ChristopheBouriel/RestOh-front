@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Eye, Users, Calendar, Clock, MapPin } from 'lucide-react'
 import useReservationsStore from '../../store/reservationsStore'
 import SimpleSelect from '../../components/common/SimpleSelect'
+import CustomDatePicker from '../../components/common/CustomDatePicker'
 
 const ReservationsManagement = () => {
   const { 
@@ -14,6 +15,8 @@ const ReservationsManagement = () => {
 
   const [statusFilter, setStatusFilter] = useState('all')
   const [dateFilter, setDateFilter] = useState('all')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [selectedReservation, setSelectedReservation] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -57,17 +60,41 @@ const ReservationsManagement = () => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    if (dateFilter === 'today') {
-      const todayStr = today.toISOString().split('T')[0]
-      dateMatch = reservation.date === todayStr
-    } else if (dateFilter === 'upcoming') {
-      dateMatch = reservationDate >= today
-    } else if (dateFilter === 'past') {
-      dateMatch = reservationDate < today
+    // Vérifier d'abord si on utilise la période (date range)
+    const hasDateRange = startDate || endDate
+    
+    if (hasDateRange) {
+      // Utiliser le filtrage par période
+      if (startDate && endDate) {
+        // Les deux dates sont définies
+        dateMatch = reservation.date >= startDate && reservation.date <= endDate
+      } else if (startDate) {
+        // Seulement la date de début
+        dateMatch = reservation.date >= startDate
+      } else if (endDate) {
+        // Seulement la date de fin
+        dateMatch = reservation.date <= endDate
+      }
+    } else {
+      // Utiliser le filtrage par date simple (existant)
+      if (dateFilter === 'today') {
+        const todayStr = today.toISOString().split('T')[0]
+        dateMatch = reservation.date === todayStr
+      } else if (dateFilter === 'upcoming') {
+        dateMatch = reservationDate >= today
+      } else if (dateFilter === 'past') {
+        dateMatch = reservationDate < today
+      }
     }
 
     return statusMatch && dateMatch
   })
+
+  // Fonction pour vider les champs de période
+  const clearDateRange = () => {
+    setStartDate('')
+    setEndDate('')
+  }
 
   // Gestion du changement de statut
   const handleStatusChange = async (reservationId, newStatus) => {
@@ -207,14 +234,55 @@ const ReservationsManagement = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date
+              Dates
             </label>
             <SimpleSelect
               value={dateFilter}
               onChange={setDateFilter}
               options={dateOptions}
               className="w-full"
+              disabled={startDate || endDate}
             />
+          </div>
+        </div>
+        
+        {/* Période Section */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-gray-700">Période</h3>
+            {(startDate || endDate) && (
+              <button 
+                onClick={clearDateRange}
+                className="text-xs text-gray-500 hover:text-gray-700 font-medium"
+              >
+                Vider les champs
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Date de début
+              </label>
+              <CustomDatePicker
+                value={startDate}
+                onChange={setStartDate}
+                className="w-full"
+                placeholder="Sélectionner date de début"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Date de fin
+              </label>
+              <CustomDatePicker
+                value={endDate}
+                onChange={setEndDate}
+                className="w-full"
+                minDate={startDate}
+                placeholder="Sélectionner date de fin"
+              />
+            </div>
           </div>
         </div>
       </div>
